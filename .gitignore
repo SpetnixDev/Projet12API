@@ -1,0 +1,33 @@
+# Java / Maven
+target/
+build/
+
+# Maven Wrapper
+!.mvn/wrapper/maven-wrapper.jar
+!.mvn/wrapper/maven-wrapper.properties
+!.mvn/wrapper/MavenWrapperDownloader.java
+
+# Environnement / secrets
+.env
+*.env
+*.key
+*.crt
+
+# Docker (runtime uniquement)
+pgdata/
+docker/**/pgdata/
+docker/**/certs/
+
+# IntelliJ IDEA
+.idea/
+*.iml
+
+# OS / outils
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Scripts locaux
+*.ps1

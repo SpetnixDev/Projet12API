@@ -1,0 +1,50 @@
+spring:
+  application:
+    name: Projet 12
+
+  profiles:
+    active: dev
+
+  datasource:
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: none
+    open-in-view: false
+
+---
+spring:
+  config:
+    activate:
+      on-profile: dev
+
+  datasource:
+    url: jdbc:postgresql://postgres:5432/projet12_dev_db
+    username: dev_user
+    password: dev_pass
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+
+server:
+  port: 8080
+
+logging:
+  level:
+    root: INFO
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+    org.springframework.security: DEBUG
+
+api:
+  refresh-token:
+    cookie-name: rtcid
+    expiration: 1209600
+
+security:
+  cors:
+    allowed-origins:
+      - https://localhost

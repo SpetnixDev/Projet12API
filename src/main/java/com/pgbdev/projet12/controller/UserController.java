@@ -1,0 +1,36 @@
+package com.pgbdev.projet12.controller;
+
+import com.pgbdev.projet12.service.UserService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.UUID;
+
+@RestController
+@RequestMapping("/api/v1/users")
+@RequiredArgsConstructor
+public class UserController {
+    private final UserService userService;
+
+    @DeleteMapping("/{userId}")
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<String> deleteUser(@PathVariable UUID userId) {
+        userService.deleteUser(userId);
+
+        return ResponseEntity.ok("User deleted successfully.");
+    }
+
+    @GetMapping
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<String> getAllUsers() {
+        return ResponseEntity.ok("You have access to this endpoint.");
+    }
+
+    @GetMapping("/{userId}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<String> getUserById(@PathVariable UUID userId) {
+        return ResponseEntity.ok("User details for user ID: " + userId);
+    }
+}
