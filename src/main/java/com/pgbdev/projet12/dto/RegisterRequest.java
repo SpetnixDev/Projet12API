@@ -22,7 +22,7 @@ public class RegisterRequest {
             regexp = "^[a-zA-Z0-9_]{3,16}$",
             message = "Username must be alphanumeric and can include underscores, between 3 and 16 characters long"
     )
-    private String username;
+    private String name;
 
     @NotBlank(message = "Password is mandatory")
     @Size(min = 8, message = "Password must be at least 8 characters long")

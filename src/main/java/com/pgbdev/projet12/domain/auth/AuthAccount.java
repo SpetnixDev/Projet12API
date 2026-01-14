@@ -1,29 +1,23 @@
 package com.pgbdev.projet12.domain.auth;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.proxy.HibernateProxy;
 import org.hibernate.type.SqlTypes;
 
-import java.time.Instant;
+import java.util.HashSet;
 import java.util.Objects;
+import java.util.Set;
 import java.util.UUID;
 
 @Entity
-@Table(name = "refresh_tokens", indexes = {
-        @Index(name = "idx_refresh_token_auth_account", columnList = "auth_account_id"),
-        @Index(name = "idx_refresh_token_token", columnList = "token")
-})
+@Table(name = "auth_accounts")
 @Getter
 @Setter
-@ToString(exclude = {"authAccount", "replacedBy"})
+@ToString
 @RequiredArgsConstructor
-@Builder
-@AllArgsConstructor
-public class RefreshToken {
+public class AuthAccount {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     @Column(nullable = false)
@@ -31,38 +25,39 @@ public class RefreshToken {
     private UUID id;
 
     @Column(nullable = false, unique = true)
-    @NotBlank
-    private String token;
-
-    @ManyToOne(optional = false, fetch = FetchType.LAZY)
-    @JoinColumn(name = "auth_account_id", nullable = false)
-    private AuthAccount authAccount;
-
-    @Column(length = 45)
-    private String ipAddress;
-
-    @Column(length = 512)
-    private String userAgent;
-
-    @Column(length = 128)
-    private String deviceId;
+    private String email;
 
     @Column(nullable = false)
-    @NotNull
-    private Instant createdAt;
+    private String passwordHash;
+
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+            name = "auth_account_roles",
+            joinColumns = @JoinColumn(name = "auth_account_id"),
+            inverseJoinColumns = @JoinColumn(name = "role_id")
+    )
+    @ToString.Exclude
+    private Set<Role> roles = new HashSet<>();
+
+    @Column(nullable = false, columnDefinition = "boolean default false")
+    private boolean verified;
+
+    @Column(nullable = false, columnDefinition = "boolean default true")
+    private boolean enabled = true;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private AccountType type;
 
     @Column(nullable = false)
-    @NotNull
-    private Instant expiresAt;
+    @JdbcTypeCode(SqlTypes.UUID)
+    private UUID ownerId;
 
-    private boolean revoked;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "replacement_token_id")
-    private RefreshToken replacedBy;
-
-    public boolean isInactive() {
-        return revoked || Instant.now().isAfter(expiresAt);
+    public AuthAccount(String email, String passwordHash, AccountType type, UUID ownerId) {
+        this.email = email;
+        this.passwordHash = passwordHash;
+        this.type = type;
+        this.ownerId = ownerId;
     }
 
     @Override
@@ -72,7 +67,7 @@ public class RefreshToken {
         Class<?> oEffectiveClass = o instanceof HibernateProxy ? ((HibernateProxy) o).getHibernateLazyInitializer().getPersistentClass() : o.getClass();
         Class<?> thisEffectiveClass = this instanceof HibernateProxy ? ((HibernateProxy) this).getHibernateLazyInitializer().getPersistentClass() : this.getClass();
         if (thisEffectiveClass != oEffectiveClass) return false;
-        RefreshToken that = (RefreshToken) o;
+        AuthAccount that = (AuthAccount) o;
         return getId() != null && Objects.equals(getId(), that.getId());
     }
 

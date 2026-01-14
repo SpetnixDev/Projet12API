@@ -1,5 +1,6 @@
 package com.pgbdev.projet12.service.auth;
 
+import com.pgbdev.projet12.domain.auth.AccountType;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
@@ -19,9 +20,11 @@ public class JwtService {
 
     private static final long EXPIRATION_TIME = 60000 * 5;
 
-    public String generateToken(UUID id, List<String> roles) {
+    public String generateToken(UUID authAccountId, UUID ownerId, AccountType type, List<String> roles) {
         return Jwts.builder()
-                .subject(String.valueOf(id))
+                .subject(String.valueOf(authAccountId))
+                .claim("ownerId", ownerId.toString())
+                .claim("type", type.name())
                 .claim("roles", roles)
                 .issuedAt(new Date())
                 .expiration(new Date(System.currentTimeMillis() + EXPIRATION_TIME))
@@ -47,8 +50,16 @@ public class JwtService {
                 .getPayload();
     }
 
-    public UUID getUserIdFromToken(String token) {
+    public UUID getAuthAccountIdFromToken(String token) {
         return UUID.fromString(validateToken(token).getSubject());
+    }
+
+    public UUID getOwnerIdFromToken(String token) {
+        return UUID.fromString(validateToken(token).get("ownerId", String.class));
+    }
+
+    public AccountType getAccountTypeFromToken(String token) {
+        return AccountType.valueOf(validateToken(token).get("type", String.class));
     }
 
     public List<String> getRolesFromToken(String token) {

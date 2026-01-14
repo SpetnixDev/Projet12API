@@ -18,18 +18,5 @@ public interface RefreshTokenRepository extends JpaRepository<RefreshToken, UUID
      */
     Optional<RefreshToken> findByToken(String token);
 
-    /**
-     * Finds all active RefreshTokens for a given user.
-     *
-     * @param userId the ID of the user
-     * @return a List of active RefreshTokens for the user
-     */
-    List<RefreshToken> findAllByUserIdAndRevokedFalse(UUID userId);
-
-    /**
-     * Deletes all RefreshTokens associated with a user (used for complete logout).
-     *
-     * @param userId the ID of the user whose tokens should be deleted
-     */
-    void deleteAllByUserId(UUID userId);
+    void deleteAllByAuthAccountId(UUID authAccountId);
 }

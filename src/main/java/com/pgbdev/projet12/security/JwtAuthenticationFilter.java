@@ -55,12 +55,17 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 return;
             }
 
-            UUID id = jwtService.getUserIdFromToken(jwt);
+            AuthPrincipal principal = new AuthPrincipal(
+                    jwtService.getAuthAccountIdFromToken(jwt),
+                    jwtService.getOwnerIdFromToken(jwt),
+                    jwtService.getAccountTypeFromToken(jwt)
+            );
+
             List<GrantedAuthority> authorities = jwtService.getRolesFromToken(jwt).stream()
                     .map(SimpleGrantedAuthority::new)
                     .collect(Collectors.toList());
 
-            UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(id, null, authorities);
+            UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(principal, null, authorities);
             authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 
             SecurityContextHolder.getContext().setAuthentication(authentication);

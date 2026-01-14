@@ -2,12 +2,10 @@ package com.pgbdev.projet12.service;
 
 import com.pgbdev.projet12.domain.auth.User;
 import com.pgbdev.projet12.repository.UserRepository;
-import com.pgbdev.projet12.service.auth.RefreshTokenService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -15,29 +13,19 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class UserService {
     private final UserRepository userRepository;
-    private final RefreshTokenService refreshTokenService;
 
-    public Optional<User> findByEmail(String email) {
-        return userRepository.findByEmail(email);
+    public User create(String username) {
+        User user = new User(username);
+        return userRepository.save(user);
     }
 
-    public User save(User newUser) {
-        return userRepository.save(newUser);
-    }
-
-    /**
-     * Deletes a user by their ID and revokes all associated refresh tokens.
-     *
-     * @param userId the ID of the user to delete
-     */
     @Transactional
-    public void deleteUser(UUID userId) {
-        refreshTokenService.deleteAllForUser(userId);
+    public void delete(UUID userId) {
         userRepository.deleteById(userId);
     }
 
-    @Transactional(readOnly = true)
-    public List<String> getUserRoles(UUID userId) {
-        return userRepository.findRoleNamesByUserId(userId);
+    public Optional<User> findById(UUID id) {
+        return userRepository.findById(id);
     }
 }
+

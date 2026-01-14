@@ -1,68 +1,32 @@
 package com.pgbdev.projet12.domain.auth;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.proxy.HibernateProxy;
 import org.hibernate.type.SqlTypes;
 
-import java.time.Instant;
 import java.util.Objects;
 import java.util.UUID;
 
 @Entity
-@Table(name = "refresh_tokens", indexes = {
-        @Index(name = "idx_refresh_token_auth_account", columnList = "auth_account_id"),
-        @Index(name = "idx_refresh_token_token", columnList = "token")
-})
+@Table(name = "associations")
 @Getter
 @Setter
-@ToString(exclude = {"authAccount", "replacedBy"})
+@ToString
 @RequiredArgsConstructor
-@Builder
-@AllArgsConstructor
-public class RefreshToken {
+public class Association {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     @Column(nullable = false)
     @JdbcTypeCode(SqlTypes.UUID)
     private UUID id;
 
-    @Column(nullable = false, unique = true)
-    @NotBlank
-    private String token;
-
-    @ManyToOne(optional = false, fetch = FetchType.LAZY)
-    @JoinColumn(name = "auth_account_id", nullable = false)
-    private AuthAccount authAccount;
-
-    @Column(length = 45)
-    private String ipAddress;
-
-    @Column(length = 512)
-    private String userAgent;
-
-    @Column(length = 128)
-    private String deviceId;
-
     @Column(nullable = false)
-    @NotNull
-    private Instant createdAt;
+    private String name;
 
-    @Column(nullable = false)
-    @NotNull
-    private Instant expiresAt;
-
-    private boolean revoked;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "replacement_token_id")
-    private RefreshToken replacedBy;
-
-    public boolean isInactive() {
-        return revoked || Instant.now().isAfter(expiresAt);
+    public Association(String name) {
+        this.name = name;
     }
 
     @Override
@@ -72,7 +36,7 @@ public class RefreshToken {
         Class<?> oEffectiveClass = o instanceof HibernateProxy ? ((HibernateProxy) o).getHibernateLazyInitializer().getPersistentClass() : o.getClass();
         Class<?> thisEffectiveClass = this instanceof HibernateProxy ? ((HibernateProxy) this).getHibernateLazyInitializer().getPersistentClass() : this.getClass();
         if (thisEffectiveClass != oEffectiveClass) return false;
-        RefreshToken that = (RefreshToken) o;
+        Association that = (Association) o;
         return getId() != null && Objects.equals(getId(), that.getId());
     }
 

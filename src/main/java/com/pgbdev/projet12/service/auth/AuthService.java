@@ -1,12 +1,12 @@
 package com.pgbdev.projet12.service.auth;
 
 import com.pgbdev.projet12.config.properties.RefreshTokenProperties;
+import com.pgbdev.projet12.domain.auth.*;
 import com.pgbdev.projet12.dto.LoginRequest;
 import com.pgbdev.projet12.dto.RegisterRequest;
-import com.pgbdev.projet12.domain.auth.RefreshToken;
-import com.pgbdev.projet12.domain.auth.Role;
-import com.pgbdev.projet12.domain.auth.User;
+import com.pgbdev.projet12.repository.AuthAccountRepository;
 import com.pgbdev.projet12.repository.RoleRepository;
+import com.pgbdev.projet12.service.AssociationService;
 import com.pgbdev.projet12.service.UserService;
 import com.pgbdev.projet12.technical.exception.*;
 import jakarta.servlet.http.HttpServletRequest;
@@ -27,100 +27,140 @@ import java.util.*;
 public class AuthService {
     private final RefreshTokenProperties refreshTokenProperties;
     private final RefreshTokenService refreshTokenService;
+    private final AuthAccountService authAccountService;
+    private final AuthAccountRepository authAccountRepository;
+
     private final UserService userService;
+    private final AssociationService associationService;
     private final RoleRepository roleRepository;
     private final JwtService jwtService;
 
-    private static final Logger logger = LoggerFactory.getLogger(AuthService.class);
-
-    public ResponseEntity<String> register(RegisterRequest registerRequest) {
-        String email = registerRequest.getEmail();
-        Optional<User> existingUser = userService.findByEmail(email);
-
-        if (existingUser.isPresent()) {
-            throw new DuplicateResourceException(User.class, "email", email, "Email already registered.");
+    @Transactional
+    public Map<String, String> register(AccountType type, RegisterRequest request, HttpServletRequest httpRequest, HttpServletResponse httpResponse) {
+        if (authAccountRepository.existsByEmail(request.getEmail())) {
+            throw new DuplicateResourceException(
+                    AuthAccount.class,
+                    "email",
+                    request.getEmail(),
+                    "Email already registered"
+            );
         }
 
-        String hashPassword = BCrypt.hashpw(registerRequest.getPassword(), BCrypt.gensalt(12));
+        String passwordHash = BCrypt.hashpw(request.getPassword(), BCrypt.gensalt());
+        UUID ownerId;
 
-        final String baseRole = "ROLE_USER";
-        Role userRole = roleRepository.findByName(baseRole).orElseThrow(() -> new ResourceNotFoundException(Role.class, "name", baseRole, "An unexpected error occurred."));
-        User newUser = new User(email, registerRequest.getUsername(), hashPassword);
+        switch (type) {
+            case USER -> {
+                User user = userService.create(request.getName());
+                ownerId = user.getId();
+            }
+            case ASSOCIATION -> {
+                Association association = associationService.create(request.getName());
+                ownerId = association.getId();
+            }
+            default -> throw new IllegalStateException("Unsupported account type");
+        }
 
-        Set<Role> roles = Set.of(userRole);
-        newUser.setRoles(roles);
+        Set<Role> roles = defaultRolesFor(type);
 
-        User savedUser = userService.save(newUser);
+        AuthAccount account = authAccountService.create(
+                request.getEmail(),
+                passwordHash,
+                type,
+                ownerId,
+                roles
+        );
 
-        return ResponseEntity.status(HttpStatus.CREATED).body("User registered successfully with ID: " + savedUser.getId());
+        RefreshToken refreshToken = refreshTokenService.create(account, httpRequest, "default");
+        refreshTokenService.setRefreshTokenCookie(httpResponse, refreshToken.getToken(), refreshTokenProperties.expiration());
+
+        String accessToken = jwtService.generateToken(
+                account.getId(),
+                account.getOwnerId(),
+                account.getType(),
+                account.getRoles().stream()
+                        .map(Role::getName)
+                        .toList()
+        );
+
+        return Map.of("accessToken", accessToken);
+    }
+
+
+    @Transactional
+    public Map<String, String> login(LoginRequest request, HttpServletRequest httpRequest, HttpServletResponse httpResponse) {
+        AuthAccount account = authAccountService.authenticate(request.getEmail(), request.getPassword());
+        RefreshToken refreshToken = refreshTokenService.create(account, httpRequest, "default");
+
+        refreshTokenService.setRefreshTokenCookie(httpResponse, refreshToken.getToken(), refreshTokenProperties.expiration());
+
+        String accessToken = jwtService.generateToken(
+                account.getId(),
+                account.getOwnerId(),
+                account.getType(),
+                account.getRoles().stream()
+                        .map(Role::getName)
+                        .toList()
+        );
+
+        return Map.of("accessToken", accessToken);
     }
 
     @Transactional
-    public ResponseEntity<?> login(LoginRequest loginRequest, HttpServletRequest request, HttpServletResponse response) {
-        Optional<User> userOpt = userService.findByEmail(loginRequest.getEmail());
+    public Map<String, String> refresh(HttpServletRequest request, HttpServletResponse response) {
+        String token = extractTokenFromCookie(request);
 
-        if (userOpt.isEmpty() || !BCrypt.checkpw(loginRequest.getPassword(), userOpt.get().getPassword())) {
-            throw new AuthenticationException("Invalid credentials.");
+        if (token == null) {
+            throw new RefreshTokenAuthException("Token missing", "Session expired, please login again");
         }
 
-        User user = userOpt.get();
+        RefreshToken newToken = refreshTokenService.rotate(token, request)
+                .orElseThrow(() -> new RefreshTokenAuthException("Token invalid", "Session expired, please login again"));
 
-        if (!user.isEnabled()) {
-            throw new AuthenticationException("Your account is disabled.");
-        }
-
-        List<String> roles = userService.getUserRoles(user.getId());
-
-        RefreshToken refreshToken = refreshTokenService.create(user, request, "default");
-        refreshTokenService.setRefreshTokenCookie(response, refreshToken.getToken(), refreshTokenProperties.expiration());
-
-        String accessToken = jwtService.generateToken(user.getId(), roles);
-
-        return ResponseEntity.ok(Map.of("accessToken", accessToken));
-    }
-
-    public ResponseEntity<?> refresh(HttpServletRequest request, HttpServletResponse response) {
-        String refreshToken = extractTokenFromCookie(request);
-
-        if (refreshToken == null) {
-            throw new RefreshTokenAuthException("Token not found", "Session expired. Please log in again.");
-        }
-
-        Optional<RefreshToken> newTokenOpt = refreshTokenService.rotate(refreshToken, request);
-
-        if (newTokenOpt.isEmpty()) {
-            throw new RefreshTokenAuthException(String.format("[%s...] Token invalid or expired", refreshToken.substring(0, 12)), "Session expired. Please log in again.");
-        }
-
-        RefreshToken newToken = newTokenOpt.get();
         refreshTokenService.setRefreshTokenCookie(response, newToken.getToken(), refreshTokenProperties.expiration());
 
-        UUID userId = newToken.getUser().getId();
-        List<String> roles = userService.getUserRoles(userId);
+        AuthAccount account = newToken.getAuthAccount();
 
-        String accessToken = jwtService.generateToken(userId, roles);
+        String accessToken = jwtService.generateToken(
+                account.getId(),
+                account.getOwnerId(),
+                account.getType(),
+                account.getRoles().stream()
+                        .map(Role::getName)
+                        .toList()
+        );
 
-        return ResponseEntity.ok(Map.of("accessToken", accessToken));
+        return Map.of("accessToken", accessToken);
     }
 
-    public ResponseEntity<String> logout(HttpServletRequest request, HttpServletResponse response) {
-        String refreshToken = extractTokenFromCookie(request);
+    public void logout(HttpServletRequest request, HttpServletResponse response) {
+        String token = extractTokenFromCookie(request);
 
-        if (refreshToken != null) {
-            refreshTokenService.revoke(refreshToken);
-        }
+        if (token != null) refreshTokenService.revoke(token);
 
         refreshTokenService.setRefreshTokenCookie(response, "", 0);
-
-        return ResponseEntity.ok("You successfully logged out.");
     }
 
+    private Set<Role> defaultRolesFor(AccountType type) {
+        String baseRoleName = switch (type) {
+            case USER -> "ROLE_USER";
+            case ASSOCIATION -> "ROLE_ASSOCIATION";
+        };
+
+        Role baseRole = roleRepository.findByName(baseRoleName).orElseThrow(() -> new IllegalStateException("Role not found: " + baseRoleName));
+
+        Role unverifiedRole = roleRepository.findByName("ROLE_UNVERIFIED").orElseThrow(() -> new IllegalStateException("Role not found: ROLE_UNVERIFIED"));
+
+        return Set.of(baseRole, unverifiedRole);
+    }
+
+
     private String extractTokenFromCookie(HttpServletRequest request) {
-        if (request.getCookies() != null) {
-            for (var cookie : request.getCookies()) {
-                if (refreshTokenProperties.cookieName().equals(cookie.getName())) {
-                    return cookie.getValue();
-                }
+        if (request.getCookies() == null) return null;
+
+        for (var cookie : request.getCookies()) {
+            if (refreshTokenProperties.cookieName().equals(cookie.getName())) {
+                return cookie.getValue();
             }
         }
 

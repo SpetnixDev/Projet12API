@@ -14,14 +14,6 @@ import java.util.UUID;
 public class UserController {
     private final UserService userService;
 
-    @DeleteMapping("/{userId}")
-    @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<String> deleteUser(@PathVariable UUID userId) {
-        userService.deleteUser(userId);
-
-        return ResponseEntity.ok("User deleted successfully.");
-    }
-
     @GetMapping
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<String> getAllUsers() {

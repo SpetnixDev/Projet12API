@@ -1,6 +1,7 @@
 package com.pgbdev.projet12.service.auth;
 
 import com.pgbdev.projet12.config.properties.RefreshTokenProperties;
+import com.pgbdev.projet12.domain.auth.AuthAccount;
 import com.pgbdev.projet12.domain.auth.RefreshToken;
 import com.pgbdev.projet12.domain.auth.User;
 import com.pgbdev.projet12.repository.RefreshTokenRepository;
@@ -22,13 +23,13 @@ public class RefreshTokenService {
     private final RefreshTokenProperties refreshTokenProperties;
     private final RefreshTokenRepository refreshTokenRepository;
 
-    public RefreshToken create(User user, HttpServletRequest request, String deviceId) {
+    public RefreshToken create(AuthAccount authAccount, HttpServletRequest request, String deviceId) {
         String ip = request.getRemoteAddr();
         String userAgent = request.getHeader("User-Agent");
 
         RefreshToken refreshToken = RefreshToken.builder()
                 .token(UUID.randomUUID().toString())
-                .user(user)
+                .authAccount(authAccount)
                 .ipAddress(ip)
                 .userAgent(userAgent)
                 .deviceId(deviceId)
@@ -69,7 +70,7 @@ public class RefreshTokenService {
 
         RefreshToken newToken = RefreshToken.builder()
                 .token(UUID.randomUUID().toString())
-                .user(existingToken.getUser())
+                .authAccount(existingToken.getAuthAccount())
                 .ipAddress(currentIp)
                 .userAgent(currentUserAgent)
                 .deviceId(existingToken.getDeviceId())
@@ -93,7 +94,7 @@ public class RefreshTokenService {
         response.addHeader("Set-Cookie", setCookieHeader);
     }
 
-    public void deleteAllForUser(UUID userId) {
-        refreshTokenRepository.deleteAllByUserId(userId);
+    public void deleteAllForAuthAccount(UUID authAccountId) {
+        refreshTokenRepository.deleteAllByAuthAccountId(authAccountId);
     }
 }

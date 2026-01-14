@@ -6,9 +6,7 @@ import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.proxy.HibernateProxy;
 import org.hibernate.type.SqlTypes;
 
-import java.util.HashSet;
 import java.util.Objects;
-import java.util.Set;
 import java.util.UUID;
 
 @Entity
@@ -24,34 +22,11 @@ public class User {
     @JdbcTypeCode(SqlTypes.UUID)
     private UUID id;
 
-    @Column(nullable = false, unique = true)
-    private String email;
-
     @Column(nullable = false)
     private String username;
 
-    @Column(nullable = false)
-    private String password;
-
-    @ManyToMany(fetch = FetchType.LAZY)
-    @JoinTable(
-            name = "user_roles",
-            joinColumns = @JoinColumn(name = "user_id"),
-            inverseJoinColumns = @JoinColumn(name = "role_id")
-    )
-    @ToString.Exclude
-    private Set<Role> roles = new HashSet<>();
-
-    @Column(nullable = false, columnDefinition = "boolean default false")
-    private boolean verified;
-
-    @Column(nullable = false, columnDefinition = "boolean default true")
-    private boolean enabled = true;
-
-    public User(String email, String username, String hashPassword) {
-        this.email = email;
+    public User(String username) {
         this.username = username;
-        this.password = hashPassword;
     }
 
     @Override

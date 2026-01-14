@@ -24,7 +24,7 @@ public class Role {
 
     @ManyToMany(mappedBy = "roles")
     @ToString.Exclude
-    private Set<User> users;
+    private Set<AuthAccount> authAccounts;
 
     @Override
     public final boolean equals(Object o) {
