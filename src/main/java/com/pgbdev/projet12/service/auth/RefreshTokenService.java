@@ -3,7 +3,6 @@ package com.pgbdev.projet12.service.auth;
 import com.pgbdev.projet12.config.properties.RefreshTokenProperties;
 import com.pgbdev.projet12.domain.auth.AuthAccount;
 import com.pgbdev.projet12.domain.auth.RefreshToken;
-import com.pgbdev.projet12.domain.auth.User;
 import com.pgbdev.projet12.repository.RefreshTokenRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;

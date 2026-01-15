@@ -1,11 +1,13 @@
-package com.pgbdev.projet12.domain.auth;
+package com.pgbdev.projet12.domain;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.proxy.HibernateProxy;
 import org.hibernate.type.SqlTypes;
 
+import java.time.Instant;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -24,6 +26,13 @@ public class Association {
 
     @Column(nullable = false)
     private String name;
+
+    @Column(length = 2000)
+    private String description;
+
+    @CreationTimestamp
+    @Column(nullable = false, updatable = false)
+    private Instant createdAt;
 
     public Association(String name) {
         this.name = name;

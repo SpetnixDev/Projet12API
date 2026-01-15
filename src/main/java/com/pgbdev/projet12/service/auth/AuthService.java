@@ -1,21 +1,19 @@
 package com.pgbdev.projet12.service.auth;
 
 import com.pgbdev.projet12.config.properties.RefreshTokenProperties;
+import com.pgbdev.projet12.domain.Association;
+import com.pgbdev.projet12.domain.User;
 import com.pgbdev.projet12.domain.auth.*;
 import com.pgbdev.projet12.dto.LoginRequest;
 import com.pgbdev.projet12.dto.RegisterRequest;
 import com.pgbdev.projet12.repository.AuthAccountRepository;
 import com.pgbdev.projet12.repository.RoleRepository;
-import com.pgbdev.projet12.service.AssociationService;
+import com.pgbdev.projet12.service.association.AssociationService;
 import com.pgbdev.projet12.service.UserService;
 import com.pgbdev.projet12.technical.exception.*;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

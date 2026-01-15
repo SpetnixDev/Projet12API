@@ -14,15 +14,9 @@ import java.util.UUID;
 public class UserController {
     private final UserService userService;
 
-    @GetMapping
-    @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<String> getAllUsers() {
-        return ResponseEntity.ok("You have access to this endpoint.");
-    }
-
-    @GetMapping("/{userId}")
+    @GetMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<String> getUserById(@PathVariable UUID userId) {
-        return ResponseEntity.ok("User details for user ID: " + userId);
+    public ResponseEntity<String> getUserById(@PathVariable UUID id) {
+        return ResponseEntity.ok("User details for user ID: " + id);
     }
 }

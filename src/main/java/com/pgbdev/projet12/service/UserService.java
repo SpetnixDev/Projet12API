@@ -1,6 +1,6 @@
 package com.pgbdev.projet12.service;
 
-import com.pgbdev.projet12.domain.auth.User;
+import com.pgbdev.projet12.domain.User;
 import com.pgbdev.projet12.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -20,8 +20,8 @@ public class UserService {
     }
 
     @Transactional
-    public void delete(UUID userId) {
-        userRepository.deleteById(userId);
+    public void delete(UUID id) {
+        userRepository.deleteById(id);
     }
 
     public Optional<User> findById(UUID id) {

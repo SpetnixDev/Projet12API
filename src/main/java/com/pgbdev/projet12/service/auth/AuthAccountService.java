@@ -4,7 +4,7 @@ import com.pgbdev.projet12.domain.auth.AccountType;
 import com.pgbdev.projet12.domain.auth.AuthAccount;
 import com.pgbdev.projet12.domain.auth.Role;
 import com.pgbdev.projet12.repository.AuthAccountRepository;
-import com.pgbdev.projet12.service.AssociationService;
+import com.pgbdev.projet12.service.association.AssociationService;
 import com.pgbdev.projet12.service.UserService;
 import com.pgbdev.projet12.technical.exception.AuthenticationException;
 import com.pgbdev.projet12.technical.exception.ResourceNotFoundException;

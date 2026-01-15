@@ -1,4 +1,4 @@
-package com.pgbdev.projet12.domain.auth;
+package com.pgbdev.projet12.domain;
 
 import jakarta.persistence.*;
 import lombok.*;
@@ -22,7 +22,7 @@ public class User {
     @JdbcTypeCode(SqlTypes.UUID)
     private UUID id;
 
-    @Column(nullable = false)
+    @Column(nullable = false, unique = true)
     private String username;
 
     public User(String username) {
