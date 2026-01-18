@@ -24,7 +24,7 @@ services:
     ports:
       - "5433:5432"
     volumes:
-      - pgdata:/var/lib/postgresql/data
+      - pg_data:/var/lib/postgresql/data
     networks:
       - backend
 
@@ -37,11 +37,14 @@ services:
       - "5050:80"
     depends_on:
       - postgres
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
     networks:
       - backend
 
 volumes:
-  pgdata:
+  pg_data:
+  pgadmin_data:
 
 networks:
   backend:

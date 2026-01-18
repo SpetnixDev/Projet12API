@@ -1,7 +1,7 @@
 package com.pgbdev.projet12.controller;
 
 import com.pgbdev.projet12.domain.Association;
-import com.pgbdev.projet12.service.association.AssociationSearchCriteria;
+import com.pgbdev.projet12.service.association.search.query.AssociationSearchCriteria;
 import com.pgbdev.projet12.service.association.AssociationSearchService;
 import com.pgbdev.projet12.service.association.AssociationService;
 import lombok.RequiredArgsConstructor;
@@ -24,8 +24,8 @@ public class AssociationController {
     @GetMapping("/search")
     public ResponseEntity<Page<Association>> search(
             AssociationSearchCriteria criteria,
-            @RequestParam int page,
-            @RequestParam int size
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
     ) {
         Pageable pageable = PageRequest.of(page, size);
         return ResponseEntity.ok().body(associationSearchService.searchAssociations(criteria, pageable));
