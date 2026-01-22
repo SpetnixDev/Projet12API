@@ -14,7 +14,7 @@ public class AssociationSpecification {
 
     private static Specification<Association> textSearch(String text) {
         return (root, query, criteriaBuilder) -> {
-            if (text == null || text.isEmpty()) {
+            if (text == null || text.isBlank()) {
                 return criteriaBuilder.conjunction();
             }
 

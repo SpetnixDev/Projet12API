@@ -6,8 +6,8 @@ import lombok.Getter;
 public enum MatchType {
     STRICT_EXACT(1000),
     EXACT_PHRASE(500),
-    PREFIX (200),
-    CONTAINS (100),
+    CONTAINS (200),
+    PREFIX (100),
     NONE (0);
 
     private final int score;

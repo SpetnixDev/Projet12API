@@ -17,8 +17,8 @@ public class DefaultFieldMatcher implements FieldMatcher {
     private static final List<MatchType> ORDER = List.of(
             MatchType.STRICT_EXACT,
             MatchType.EXACT_PHRASE,
-            MatchType.PREFIX,
-            MatchType.CONTAINS
+            MatchType.CONTAINS,
+            MatchType.PREFIX
     );
 
     @Override
@@ -33,9 +33,9 @@ public class DefaultFieldMatcher implements FieldMatcher {
             MatchResult result = switch (matchType) {
                 case STRICT_EXACT -> strictExactMatch(field, context);
                 case EXACT_PHRASE -> exactPhraseMatch(field, context);
-                case PREFIX -> prefixMatch(fieldTokens, context);
                 case CONTAINS -> containsMatch(fieldTokens, context);
-                default -> MatchResult.none();
+                case PREFIX -> prefixMatch(fieldTokens, context);
+                default -> throw new IllegalStateException("Unexpected value: " + matchType);
             };
 
             if (result.matchType() != MatchType.NONE) {
@@ -62,18 +62,6 @@ public class DefaultFieldMatcher implements FieldMatcher {
         return MatchResult.none();
     }
 
-    private MatchResult prefixMatch(List<String> fieldTokens, SearchContext context) {
-        Set<String> matchedTokens = context.tokens().stream()
-                .filter(token -> fieldTokens.stream().anyMatch(ft -> ft.startsWith(token)))
-                .collect(Collectors.toSet());
-
-        if (!matchedTokens.isEmpty()) {
-            return new MatchResult(MatchType.PREFIX, matchedTokens);
-        }
-
-        return MatchResult.none();
-    }
-
     private MatchResult containsMatch(List<String> fieldTokens, SearchContext context) {
         Set<String> matchedTokens = context.tokens().stream()
                 .filter(fieldTokens::contains)
@@ -81,6 +69,18 @@ public class DefaultFieldMatcher implements FieldMatcher {
 
         if (!matchedTokens.isEmpty()) {
             return new MatchResult(MatchType.CONTAINS, matchedTokens);
+        }
+
+        return MatchResult.none();
+    }
+
+    private MatchResult prefixMatch(List<String> fieldTokens, SearchContext context) {
+        Set<String> matchedTokens = context.tokens().stream()
+                .filter(token -> fieldTokens.stream().anyMatch(ft -> ft.startsWith(token)))
+                .collect(Collectors.toSet());
+
+        if (!matchedTokens.isEmpty()) {
+            return new MatchResult(MatchType.PREFIX, matchedTokens);
         }
 
         return MatchResult.none();
