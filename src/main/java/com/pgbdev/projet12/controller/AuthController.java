@@ -1,8 +1,8 @@
 package com.pgbdev.projet12.controller;
 
 import com.pgbdev.projet12.domain.auth.AccountType;
-import com.pgbdev.projet12.dto.LoginRequest;
-import com.pgbdev.projet12.dto.RegisterRequest;
+import com.pgbdev.projet12.dto.request.LoginRequest;
+import com.pgbdev.projet12.dto.request.RegisterRequest;
 import com.pgbdev.projet12.service.auth.AuthService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;

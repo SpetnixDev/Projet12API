@@ -1,15 +1,20 @@
 package com.pgbdev.projet12.service.association.search.query;
 
 import com.pgbdev.projet12.domain.Association;
+import com.pgbdev.projet12.domain.Tag;
 import jakarta.persistence.criteria.Expression;
+import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.Predicate;
 import org.springframework.data.jpa.domain.Specification;
 
 import java.util.Arrays;
+import java.util.List;
 
 public class AssociationSpecification {
     public static Specification<Association> build(AssociationSearchCriteria criteria) {
-        return Specification.where(textSearch(criteria.query()));
+        return Specification
+                .where(textSearch(criteria.query()))
+                .and(tagSearch(criteria.tags()));
     }
 
     private static Specification<Association> textSearch(String text) {
@@ -34,6 +39,20 @@ public class AssociationSpecification {
                     .toArray(Predicate[]::new);
 
             return criteriaBuilder.or(predicates);
+        };
+    }
+
+    private static Specification<Association> tagSearch(List<Long> tags) {
+        return (root, query, criteriaBuilder) -> {
+            if (tags == null || tags.isEmpty()) {
+                return criteriaBuilder.conjunction();
+            }
+
+            query.distinct(true);
+
+            Join<Association, Tag> tagJoin = root.join("tags");
+
+            return tagJoin.get("id").in(tags);
         };
     }
 }

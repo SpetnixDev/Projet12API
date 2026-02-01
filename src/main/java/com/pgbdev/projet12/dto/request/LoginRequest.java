@@ -1,4 +1,4 @@
-package com.pgbdev.projet12.dto;
+package com.pgbdev.projet12.dto.request;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;

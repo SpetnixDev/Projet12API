@@ -1,7 +1,11 @@
 package com.pgbdev.projet12.service.association;
 
 import com.pgbdev.projet12.domain.Association;
+import com.pgbdev.projet12.dto.request.AssociationSearchRequest;
+import com.pgbdev.projet12.dto.response.AssociationResponse;
+import com.pgbdev.projet12.mapper.AssociationMapper;
 import com.pgbdev.projet12.repository.AssociationRepository;
+import com.pgbdev.projet12.service.TagResolver;
 import com.pgbdev.projet12.service.association.search.context.NormalizedAssociation;
 import com.pgbdev.projet12.service.association.search.context.SearchContext;
 import com.pgbdev.projet12.service.association.search.matching.SearchResultScorer;
@@ -22,11 +26,20 @@ import java.util.List;
 @RequiredArgsConstructor
 public class AssociationSearchService {
     private final AssociationRepository associationRepository;
+    private final AssociationMapper associationMapper;
     private final SearchResultScorer searchResultScorer;
+    private final TagResolver tagResolver;
     private final TextNormalizer normalizer;
     private final Tokenizer tokenizer;
 
-    public Page<Association> searchAssociations(AssociationSearchCriteria criteria, Pageable pageable) {
+    public Page<AssociationResponse> searchAssociations(AssociationSearchRequest request, Pageable pageable) {
+        List<Long> tagIds = tagResolver.resolveIds(request.tags());
+
+        AssociationSearchCriteria criteria = new AssociationSearchCriteria(
+                request.query(),
+                tagIds
+        );
+
         Specification<Association> specification = AssociationSpecification.build(criteria);
         List<NormalizedAssociation> normalizedResults = associationRepository.findAll(specification)
                 .stream()
@@ -38,11 +51,12 @@ public class AssociationSearchService {
         SearchContext context = SearchContext.from(criteria.query(), normalizer, tokenizer);
 
         List<Association> results = searchResultScorer.scoreAndSortResults(normalizedResults, context);
+        List<AssociationResponse> response = associationMapper.toResponseList(results);
 
-        return getPageFromList(results, pageable);
+        return getPageFromList(response, pageable);
     }
 
-    private Page<Association> getPageFromList(List<Association> associations, Pageable pageable) {
+    private Page<AssociationResponse> getPageFromList(List<AssociationResponse> associations, Pageable pageable) {
         int total = associations.size();
         int fromIndex = Math.toIntExact(pageable.getOffset());
         if (fromIndex >= total) {
@@ -50,7 +64,7 @@ public class AssociationSearchService {
         }
 
         int toIndex = Math.min(fromIndex + pageable.getPageSize(), total);
-        List<Association> pageContent = associations.subList(fromIndex, toIndex);
+        List<AssociationResponse> pageContent = associations.subList(fromIndex, toIndex);
 
         return PageableExecutionUtils.getPage(pageContent, pageable, () -> total);
     }

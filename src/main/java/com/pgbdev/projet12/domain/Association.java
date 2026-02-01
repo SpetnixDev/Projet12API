@@ -8,7 +8,9 @@ import org.hibernate.proxy.HibernateProxy;
 import org.hibernate.type.SqlTypes;
 
 import java.time.Instant;
+import java.util.HashSet;
 import java.util.Objects;
+import java.util.Set;
 import java.util.UUID;
 
 @Entity
@@ -33,6 +35,15 @@ public class Association {
     @CreationTimestamp
     @Column(nullable = false, updatable = false)
     private Instant createdAt;
+
+    @ManyToMany
+    @JoinTable(
+            name = "association_tags",
+            joinColumns = @JoinColumn(name = "association_id"),
+            inverseJoinColumns = @JoinColumn(name = "tag_id")
+    )
+    @ToString.Exclude
+    private Set<Tag> tags = new HashSet<>();
 
     public Association(String name) {
         this.name = name;
