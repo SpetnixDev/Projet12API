@@ -45,6 +45,15 @@ public class Association {
     @ToString.Exclude
     private Set<Tag> tags = new HashSet<>();
 
+    @ManyToMany
+    @JoinTable(
+            name = "association_departments",
+            joinColumns = @JoinColumn(name = "association_id"),
+            inverseJoinColumns = @JoinColumn(name = "department_code")
+    )
+    @ToString.Exclude
+    private Set<Department> departments = new HashSet<>();
+
     public Association(String name) {
         this.name = name;
     }

@@ -3,6 +3,7 @@ package com.pgbdev.projet12.controller;
 import com.pgbdev.projet12.domain.Association;
 import com.pgbdev.projet12.dto.request.AssociationSearchRequest;
 import com.pgbdev.projet12.dto.response.AssociationResponse;
+import com.pgbdev.projet12.service.Scope;
 import com.pgbdev.projet12.service.association.AssociationSearchService;
 import com.pgbdev.projet12.service.association.AssociationService;
 import lombok.RequiredArgsConstructor;
@@ -13,6 +14,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -33,8 +35,19 @@ public class AssociationController {
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Association> getAssociationById(@PathVariable UUID id) {
         return ResponseEntity.ok().body(associationService.getAssociationById(id));
+    }
+
+    @PutMapping("/{id}/departments")
+    @PreAuthorize("hasRole('ASSOCIATION') or hasRole('ADMIN')")
+    public ResponseEntity<Void> updateDepartments(
+            @PathVariable UUID id,
+            @RequestParam Scope scope,
+            @RequestParam(required = false) List<String> departmentCodes,
+            @RequestParam(required = false) List<String> regionCodes
+    ) {
+        associationService.updateDepartments(id, scope, departmentCodes, regionCodes);
+        return ResponseEntity.noContent().build();
     }
 }
