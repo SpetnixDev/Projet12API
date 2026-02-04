@@ -2,6 +2,7 @@ package com.pgbdev.projet12.technical.config;
 
 import com.pgbdev.projet12.technical.ErrorResponse;
 import com.pgbdev.projet12.technical.exception.APIException;
+import com.pgbdev.projet12.technical.exception.ClientMessageProvider;
 import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,11 +20,16 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(APIException.class)
     public ResponseEntity<ErrorResponse> handleAPIException(APIException ex, HttpServletRequest request) {
-        ErrorCode errorCode = ex.getErrorCode();
+        ErrorCode errorCode = ex.getCode();
         String path = request.getRequestURI() + (request.getQueryString() != null ? "?" + request.getQueryString() : "");
 
-        log(errorCode, ex, ex.getCustomMessage(), ex.getEntity(), request, path);
-        return respond(errorCode, ex.getCustomMessage());
+        log(errorCode, ex, request, path);
+
+        String message = (ex instanceof ClientMessageProvider provider) ?
+                provider.getClientMessage() :
+                errorCode.getDefaultMessage();
+
+        return respond(errorCode, message);
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
@@ -32,17 +38,14 @@ public class GlobalExceptionHandler {
         String path = request.getRequestURI() + (request.getQueryString() != null ? "?" + request.getQueryString() : "");
         String message = Objects.requireNonNullElse(ex.getBindingResult().getFieldError(), ex.getBindingResult().getGlobalError()).getDefaultMessage();
         String customMessage = "Request validation failed: " + message;
-        String entity = ex.getBindingResult().getTarget() != null ? ex.getBindingResult().getTarget().getClass().getSimpleName() : "Unknown";
 
-        log(errorCode, ex, customMessage, entity, request, path);
+        log(errorCode, ex, request, path);
         return respond(errorCode, customMessage);
     }
 
     private void log(
             ErrorCode errorCode,
             Exception ex,
-            String customMessage,
-            String entity,
             HttpServletRequest request,
             String path) {
         logger.error("""
@@ -52,8 +55,6 @@ public class GlobalExceptionHandler {
                         -- Error: {}
                         -- Exception: {}
                         -- Message: {}
-                        -- CustomMessage: {}
-                        -- Entity: {}
                         -- Method: {}
                         -- Path: {}
                         -- Timestamp: {}""",
@@ -62,18 +63,17 @@ public class GlobalExceptionHandler {
                 errorCode,
                 ex.getClass().getSimpleName(),
                 ex.getMessage(),
-                customMessage,
-                entity,
                 request.getMethod(),
                 path,
-                Instant.now()
+                Instant.now(),
+                ex
         );
     }
 
-    private ResponseEntity<ErrorResponse> respond(ErrorCode errorCode, String customMessage) {
+    private ResponseEntity<ErrorResponse> respond(ErrorCode errorCode, String message) {
         return ResponseEntity.status(errorCode.getHttpStatus())
                 .body(new ErrorResponse(
                         errorCode.getHttpStatus().value(),
-                        customMessage));
+                        message));
     }
 }

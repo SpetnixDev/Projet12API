@@ -24,7 +24,7 @@ public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
 
         ErrorResponse errorResponse = new ErrorResponse(
                 httpStatus,
-                "Authentication failed. Please log in again."
+                errorCode.getDefaultMessage()
         );
 
         response.setStatus(httpStatus);

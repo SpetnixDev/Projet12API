@@ -10,7 +10,9 @@ import com.pgbdev.projet12.repository.AuthAccountRepository;
 import com.pgbdev.projet12.repository.RoleRepository;
 import com.pgbdev.projet12.service.association.AssociationService;
 import com.pgbdev.projet12.service.UserService;
-import com.pgbdev.projet12.technical.exception.*;
+import com.pgbdev.projet12.technical.exception.auth.AuthenticationException;
+import com.pgbdev.projet12.technical.exception.resource.DuplicateResourceException;
+import com.pgbdev.projet12.technical.exception.resource.ResourceNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -40,7 +42,7 @@ public class AuthService {
                     AuthAccount.class,
                     "email",
                     request.getEmail(),
-                    "Email already registered"
+                    "Cet email est déjà utilisé."
             );
         }
 
@@ -109,11 +111,11 @@ public class AuthService {
         String token = extractTokenFromCookie(request);
 
         if (token == null) {
-            throw new RefreshTokenAuthException("Token missing", "Session expired, please login again");
+            throw new AuthenticationException("Token missing", "Session expirée. Veuillez vous reconnecter.");
         }
 
         RefreshToken newToken = refreshTokenService.rotate(token, request)
-                .orElseThrow(() -> new RefreshTokenAuthException("Token invalid", "Session expired, please login again"));
+                .orElseThrow(() -> new AuthenticationException("Token invalid", "Session expirée. Veuillez vous reconnecter."));
 
         refreshTokenService.setRefreshTokenCookie(response, newToken.getToken(), refreshTokenProperties.expiration());
 
@@ -145,9 +147,8 @@ public class AuthService {
             case ASSOCIATION -> "ROLE_ASSOCIATION";
         };
 
-        Role baseRole = roleRepository.findByName(baseRoleName).orElseThrow(() -> new IllegalStateException("Role not found: " + baseRoleName));
-
-        Role unverifiedRole = roleRepository.findByName("ROLE_UNVERIFIED").orElseThrow(() -> new IllegalStateException("Role not found: ROLE_UNVERIFIED"));
+        Role baseRole = roleRepository.findByName(baseRoleName).orElseThrow(() -> new ResourceNotFoundException(Role.class, "Name", baseRoleName));
+        Role unverifiedRole = roleRepository.findByName("ROLE_UNVERIFIED").orElseThrow(() -> new ResourceNotFoundException(Role.class, "Name", "ROLE_UNVERIFIED"));
 
         return Set.of(baseRole, unverifiedRole);
     }

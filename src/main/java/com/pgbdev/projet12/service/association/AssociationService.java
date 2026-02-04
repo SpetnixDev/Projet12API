@@ -6,8 +6,8 @@ import com.pgbdev.projet12.domain.Region;
 import com.pgbdev.projet12.repository.AssociationRepository;
 import com.pgbdev.projet12.service.Scope;
 import com.pgbdev.projet12.service.TerritoryService;
-import com.pgbdev.projet12.technical.exception.InvalidTerritorySelectionException;
-import com.pgbdev.projet12.technical.exception.ResourceNotFoundException;
+import com.pgbdev.projet12.technical.exception.request.InvalidTerritorySelectionException;
+import com.pgbdev.projet12.technical.exception.resource.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -32,8 +32,8 @@ public class AssociationService {
                 .orElseThrow(() -> new ResourceNotFoundException(
                         Association.class,
                         "id",
-                        id.toString(),
-                        "Association not found"));
+                        id.toString()
+                ));
     }
 
     @Transactional

@@ -5,15 +5,15 @@ import lombok.Getter;
 
 @Getter
 public abstract class APIException extends RuntimeException {
-    private final String entity;
-    private final String customMessage;
+    private final ErrorCode code;
 
-    public APIException(String message, Class<?> clazz, String customMessage) {
-        super(message);
+    public APIException(ErrorCode code, String internalMessage, Throwable cause) {
+        super(internalMessage != null ? internalMessage : code.getDefaultMessage(), cause);
 
-        this.entity = clazz.getSimpleName();
-        this.customMessage = customMessage;
+        this.code = code;
     }
 
-    public abstract ErrorCode getErrorCode();
+    public APIException(ErrorCode code, String internalMessage) {
+        this(code, internalMessage, null);
+    }
 }

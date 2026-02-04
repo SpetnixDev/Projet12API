@@ -24,7 +24,7 @@ public class CustomDeniedAccessHandler implements AccessDeniedHandler {
 
         ErrorResponse errorResponse = new ErrorResponse(
                 httpStatus,
-                "Resource not found"
+                errorCode.getDefaultMessage()
         );
 
         response.setStatus(httpStatus);

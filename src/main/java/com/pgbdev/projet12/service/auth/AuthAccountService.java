@@ -6,8 +6,8 @@ import com.pgbdev.projet12.domain.auth.Role;
 import com.pgbdev.projet12.repository.AuthAccountRepository;
 import com.pgbdev.projet12.service.association.AssociationService;
 import com.pgbdev.projet12.service.UserService;
-import com.pgbdev.projet12.technical.exception.AuthenticationException;
-import com.pgbdev.projet12.technical.exception.ResourceNotFoundException;
+import com.pgbdev.projet12.technical.exception.auth.AuthenticationException;
+import com.pgbdev.projet12.technical.exception.resource.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.stereotype.Service;
@@ -43,14 +43,14 @@ public class AuthAccountService {
 
     public AuthAccount authenticate(String email, String password) {
         AuthAccount account = authAccountRepository.findByEmail(email)
-                .orElseThrow(() -> new AuthenticationException("Invalid credentials"));
+                .orElseThrow(() -> new AuthenticationException("Invalid credentials", "Identifiants invalides."));
 
         if (!BCrypt.checkpw(password, account.getPasswordHash())) {
-            throw new AuthenticationException("Invalid credentials");
+            throw new AuthenticationException("Invalid credentials", "Identifiants invalides.");
         }
 
         if (!account.isEnabled()) {
-            throw new AuthenticationException("Account disabled");
+            throw new AuthenticationException("Account disabled", "Votre compte est désactivé.");
         }
 
         return account;
@@ -59,12 +59,7 @@ public class AuthAccountService {
     @Transactional
     public void deleteAccount(UUID authAccountId) {
         AuthAccount account = authAccountRepository.findById(authAccountId)
-                .orElseThrow(() -> new ResourceNotFoundException(
-                        AuthAccount.class,
-                        "id",
-                        authAccountId.toString(),
-                        "Account not found"
-                ));
+                .orElseThrow(() -> new ResourceNotFoundException(AuthAccount.class, "id", authAccountId.toString()));
 
         refreshTokenService.deleteAllForAuthAccount(authAccountId);
 
