@@ -14,7 +14,8 @@ public class AssociationSpecification {
     public static Specification<Association> build(AssociationSearchCriteria criteria) {
         return Specification
                 .where(textSearch(criteria.query()))
-                .and(tagSearch(criteria.tags()));
+                .and(tagSearch(criteria.tags()))
+                .and(departmentSearch(criteria.departments()));
     }
 
     private static Specification<Association> textSearch(String text) {
@@ -53,6 +54,20 @@ public class AssociationSpecification {
             Join<Association, Tag> tagJoin = root.join("tags");
 
             return tagJoin.get("id").in(tags);
+        };
+    }
+
+    private static Specification<Association> departmentSearch(List<String> departments) {
+        return (root, query, criteriaBuilder) -> {
+            if (departments == null || departments.isEmpty()) {
+                return criteriaBuilder.conjunction();
+            }
+
+            query.distinct(true);
+
+            Join<Association, String> departmentJoin = root.join("departments");
+
+            return departmentJoin.get("code").in(departments);
         };
     }
 }

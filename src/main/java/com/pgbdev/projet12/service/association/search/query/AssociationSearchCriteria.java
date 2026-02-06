@@ -4,5 +4,6 @@ import java.util.List;
 
 public record AssociationSearchCriteria(
         String query,
-        List<Long> tags
+        List<Long> tags,
+        List<String> departments
 ) {}
