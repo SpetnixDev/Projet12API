@@ -12,6 +12,6 @@ import java.util.UUID;
 
 @Repository
 public interface AssociationRepository extends JpaRepository<Association, UUID>, JpaSpecificationExecutor<Association> {
-    @EntityGraph(attributePaths = {"tags"})
+    @EntityGraph(attributePaths = {"tags", "departments"})
     List<Association> findAll(Specification<Association> spec);
 }

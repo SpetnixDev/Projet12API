@@ -10,6 +10,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.servlet.NoHandlerFoundException;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import java.time.Instant;
 import java.util.Objects;
@@ -37,10 +39,28 @@ public class GlobalExceptionHandler {
         ErrorCode errorCode = ErrorCode.INVALID_REQUEST;
         String path = request.getRequestURI() + (request.getQueryString() != null ? "?" + request.getQueryString() : "");
         String message = Objects.requireNonNullElse(ex.getBindingResult().getFieldError(), ex.getBindingResult().getGlobalError()).getDefaultMessage();
-        String customMessage = "Request validation failed: " + message;
+        String customMessage = "Requête invalide : " + message;
 
         log(errorCode, ex, request, path);
         return respond(errorCode, customMessage);
+    }
+
+    @ExceptionHandler(NoResourceFoundException.class)
+    public ResponseEntity<ErrorResponse> handleNoResourceFound(NoResourceFoundException ex, HttpServletRequest request) {
+        return handle404(ex, request);
+    }
+
+    @ExceptionHandler(NoHandlerFoundException.class)
+    public ResponseEntity<ErrorResponse> handleNoHandlerFound(NoHandlerFoundException ex, HttpServletRequest request) {
+        return handle404(ex, request);
+    }
+
+    private ResponseEntity<ErrorResponse> handle404(Exception ex, HttpServletRequest request) {
+        ErrorCode errorCode = ErrorCode.RESOURCE_NOT_FOUND;
+        String path = request.getRequestURI() + (request.getQueryString() != null ? "?" + request.getQueryString() : "");
+
+        log(errorCode, ex, request, path);
+        return respond(errorCode, errorCode.getDefaultMessage());
     }
 
     private void log(

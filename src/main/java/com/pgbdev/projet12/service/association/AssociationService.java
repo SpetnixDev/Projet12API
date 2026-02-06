@@ -3,8 +3,11 @@ package com.pgbdev.projet12.service.association;
 import com.pgbdev.projet12.domain.Association;
 import com.pgbdev.projet12.domain.Department;
 import com.pgbdev.projet12.domain.Region;
+import com.pgbdev.projet12.domain.Tag;
 import com.pgbdev.projet12.repository.AssociationRepository;
 import com.pgbdev.projet12.service.Scope;
+import com.pgbdev.projet12.service.TagResolver;
+import com.pgbdev.projet12.service.TagService;
 import com.pgbdev.projet12.service.TerritoryService;
 import com.pgbdev.projet12.technical.exception.request.InvalidTerritorySelectionException;
 import com.pgbdev.projet12.technical.exception.resource.ResourceNotFoundException;
@@ -21,6 +24,8 @@ import java.util.UUID;
 public class AssociationService {
     private final AssociationRepository associationRepository;
     private final TerritoryService territoryService;
+    private final TagService tagService;
+    private final TagResolver tagResolver;
 
     public Association create(String name) {
         Association association = new Association(name);
@@ -37,6 +42,17 @@ public class AssociationService {
     }
 
     @Transactional
+    public void updateTags(UUID id, List<String> tagNames) {
+        List<Long> tagIds = tagResolver.resolveIds(tagNames);
+
+        Association association = getAssociationById(id);
+        Set<Tag> tags = tagService.getTags(tagIds);
+
+        association.getTags().clear();
+        association.getTags().addAll(tags);
+    }
+
+    @Transactional
     public void updateDepartments(UUID id, Scope scope, List<String> departmentCodes, List<String> regionCodes) {
         if (scope == Scope.DEPARTMENTS && (departmentCodes == null || departmentCodes.isEmpty())) {
             throw new InvalidTerritorySelectionException(Department.class, "Au moins un code de département doit être fourni.");
@@ -45,7 +61,6 @@ public class AssociationService {
         }
 
         Association association = getAssociationById(id);
-
         Set<Department> departments = territoryService.resolveDepartments(scope, departmentCodes, regionCodes);
 
         association.getDepartments().clear();

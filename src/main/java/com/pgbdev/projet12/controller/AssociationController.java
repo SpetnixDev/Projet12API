@@ -39,6 +39,16 @@ public class AssociationController {
         return ResponseEntity.ok().body(associationService.getAssociationById(id));
     }
 
+    @PutMapping("/{id}/tags")
+    @PreAuthorize("hasRole('ASSOCIATION') or hasRole('ADMIN')")
+    public ResponseEntity<Void> updateTags(
+            @PathVariable UUID id,
+            @RequestParam List<String> tags
+    ) {
+        associationService.updateTags(id, tags);
+        return ResponseEntity.noContent().build();
+    }
+
     @PutMapping("/{id}/departments")
     @PreAuthorize("hasRole('ASSOCIATION') or hasRole('ADMIN')")
     public ResponseEntity<Void> updateDepartments(

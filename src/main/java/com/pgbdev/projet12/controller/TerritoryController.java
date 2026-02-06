@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 @RestController
-@RequestMapping("/territories")
+@RequestMapping("/api/v1/territories")
 @RequiredArgsConstructor
 public class TerritoryController {
     private final TerritoryService territoryService;

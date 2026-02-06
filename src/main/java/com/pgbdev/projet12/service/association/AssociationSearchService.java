@@ -37,7 +37,8 @@ public class AssociationSearchService {
 
         AssociationSearchCriteria criteria = new AssociationSearchCriteria(
                 request.query(),
-                tagIds
+                tagIds,
+                request.departments()
         );
 
         Specification<Association> specification = AssociationSpecification.build(criteria);

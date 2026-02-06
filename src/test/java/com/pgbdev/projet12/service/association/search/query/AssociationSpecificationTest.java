@@ -11,7 +11,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class AssociationSpecificationTest {
     @Test
     void build_shouldReturnNonNullSpecification() {
-        AssociationSearchCriteria criteria = new AssociationSearchCriteria("query", List.of());
+        AssociationSearchCriteria criteria = new AssociationSearchCriteria("query", List.of(), List.of());
         Specification<Association> specification = AssociationSpecification.build(criteria);
 
         assertNotNull(specification);
