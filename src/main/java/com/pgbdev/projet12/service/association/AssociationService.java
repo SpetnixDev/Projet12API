@@ -4,6 +4,8 @@ import com.pgbdev.projet12.domain.Association;
 import com.pgbdev.projet12.domain.Department;
 import com.pgbdev.projet12.domain.Region;
 import com.pgbdev.projet12.domain.Tag;
+import com.pgbdev.projet12.dto.response.AssociationResponse;
+import com.pgbdev.projet12.mapper.AssociationMapper;
 import com.pgbdev.projet12.repository.AssociationRepository;
 import com.pgbdev.projet12.service.Scope;
 import com.pgbdev.projet12.service.TagResolver;
@@ -26,26 +28,34 @@ public class AssociationService {
     private final TerritoryService territoryService;
     private final TagService tagService;
     private final TagResolver tagResolver;
+    private final AssociationMapper associationMapper;
 
     public Association create(String name) {
         Association association = new Association(name);
         return associationRepository.save(association);
     }
 
-    public Association getAssociationById(UUID id) {
-        return associationRepository.findById(id)
+    public AssociationResponse getAssociationById(UUID id) {
+        Association association = associationRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(
                         Association.class,
                         "id",
                         id.toString()
                 ));
+
+        return associationMapper.toResponse(association);
     }
 
     @Transactional
     public void updateTags(UUID id, List<String> tagNames) {
         List<Long> tagIds = tagResolver.resolveIds(tagNames);
 
-        Association association = getAssociationById(id);
+        Association association = associationRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        Association.class,
+                        "id",
+                        id.toString()
+                ));
         Set<Tag> tags = tagService.getTags(tagIds);
 
         association.getTags().clear();
@@ -60,7 +70,12 @@ public class AssociationService {
             throw new InvalidTerritorySelectionException(Region.class, "Au moins un code de région doit être fourni.");
         }
 
-        Association association = getAssociationById(id);
+        Association association = associationRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        Association.class,
+                        "id",
+                        id.toString()
+                ));
         Set<Department> departments = territoryService.resolveDepartments(scope, departmentCodes, regionCodes);
 
         association.getDepartments().clear();

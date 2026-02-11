@@ -1,6 +1,5 @@
 package com.pgbdev.projet12.controller;
 
-import com.pgbdev.projet12.domain.Association;
 import com.pgbdev.projet12.dto.request.AssociationSearchRequest;
 import com.pgbdev.projet12.dto.response.AssociationResponse;
 import com.pgbdev.projet12.service.Scope;
@@ -35,7 +34,7 @@ public class AssociationController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Association> getAssociationById(@PathVariable UUID id) {
+    public ResponseEntity<AssociationResponse> getAssociationById(@PathVariable UUID id) {
         return ResponseEntity.ok().body(associationService.getAssociationById(id));
     }
 
