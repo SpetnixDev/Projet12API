@@ -1,7 +1,10 @@
 package com.pgbdev.projet12.service;
 
 import com.pgbdev.projet12.domain.Department;
-import com.pgbdev.projet12.domain.Region;
+import com.pgbdev.projet12.dto.response.DepartmentResponse;
+import com.pgbdev.projet12.dto.response.RegionResponse;
+import com.pgbdev.projet12.mapper.DepartmentMapper;
+import com.pgbdev.projet12.mapper.RegionMapper;
 import com.pgbdev.projet12.repository.DepartmentRepository;
 import com.pgbdev.projet12.repository.RegionRepository;
 import lombok.RequiredArgsConstructor;
@@ -14,7 +17,9 @@ import java.util.Set;
 @RequiredArgsConstructor
 public class TerritoryService {
     private final DepartmentRepository departmentRepository;
+    private final DepartmentMapper departmentMapper;
     private final RegionRepository regionRepository;
+    private final RegionMapper regionMapper;
 
     public Set<Department> resolveDepartments(Scope scope, List<String> departmentCodes, List<String> regionCodes) {
         return switch (scope) {
@@ -24,11 +29,11 @@ public class TerritoryService {
         };
     }
 
-    public List<Department> getAllDepartments() {
-        return departmentRepository.findAll();
+    public List<DepartmentResponse> getAllDepartments() {
+        return departmentMapper.toResponseList(departmentRepository.findAll());
     }
 
-    public List<Region> getAllRegions() {
-        return regionRepository.findAll();
+    public List<RegionResponse> getAllRegions() {
+        return regionMapper.toResponseList(regionRepository.findAll());
     }
 }

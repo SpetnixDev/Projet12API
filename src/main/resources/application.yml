@@ -47,7 +47,7 @@ api:
 security:
   cors:
     allowed-origins:
-      - https://localhost
+      - http://localhost:3000
 
 geo:
   api:

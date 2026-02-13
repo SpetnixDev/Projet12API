@@ -1,7 +1,7 @@
 package com.pgbdev.projet12.controller;
 
-import com.pgbdev.projet12.domain.Department;
-import com.pgbdev.projet12.domain.Region;
+import com.pgbdev.projet12.dto.response.DepartmentResponse;
+import com.pgbdev.projet12.dto.response.RegionResponse;
 import com.pgbdev.projet12.service.TerritoryService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -18,12 +18,12 @@ public class TerritoryController {
     private final TerritoryService territoryService;
 
     @GetMapping("/departments")
-    public ResponseEntity<List<Department>> getAllDepartments() {
+    public ResponseEntity<List<DepartmentResponse>> getAllDepartments() {
         return ResponseEntity.ok(territoryService.getAllDepartments());
     }
 
     @GetMapping("/regions")
-    public ResponseEntity<List<Region>> getAllRegions() {
+    public ResponseEntity<List<RegionResponse>> getAllRegions() {
         return ResponseEntity.ok(territoryService.getAllRegions());
     }
 }

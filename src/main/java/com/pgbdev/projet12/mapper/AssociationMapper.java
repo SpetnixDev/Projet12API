@@ -6,7 +6,9 @@ import org.mapstruct.Mapper;
 
 import java.util.List;
 
-@Mapper(componentModel = "spring", uses = TagMapper.class)
+@Mapper(componentModel = "spring", uses = {
+        TagMapper.class, DepartmentMapper.class
+})
 public interface AssociationMapper {
     AssociationResponse toResponse(Association association);
 

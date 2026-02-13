@@ -3,6 +3,7 @@ package com.pgbdev.projet12.service.association;
 import com.pgbdev.projet12.domain.Association;
 import com.pgbdev.projet12.dto.request.AssociationSearchRequest;
 import com.pgbdev.projet12.dto.response.AssociationResponse;
+import com.pgbdev.projet12.dto.response.PageResponse;
 import com.pgbdev.projet12.mapper.AssociationMapper;
 import com.pgbdev.projet12.repository.AssociationRepository;
 import com.pgbdev.projet12.service.TagResolver;
@@ -32,7 +33,7 @@ public class AssociationSearchService {
     private final TextNormalizer normalizer;
     private final Tokenizer tokenizer;
 
-    public Page<AssociationResponse> searchAssociations(AssociationSearchRequest request, Pageable pageable) {
+    public PageResponse<AssociationResponse> searchAssociations(AssociationSearchRequest request, Pageable pageable) {
         List<Long> tagIds = tagResolver.resolveIds(request.tags());
 
         AssociationSearchCriteria criteria = new AssociationSearchCriteria(
@@ -54,7 +55,15 @@ public class AssociationSearchService {
         List<Association> results = searchResultScorer.scoreAndSortResults(normalizedResults, context);
         List<AssociationResponse> response = associationMapper.toResponseList(results);
 
-        return getPageFromList(response, pageable);
+        Page<AssociationResponse> page = getPageFromList(response, pageable);
+
+        return new PageResponse<>(
+                page.getContent(),
+                page.getNumber(),
+                page.getSize(),
+                page.getTotalElements(),
+                page.getTotalPages()
+        );
     }
 
     private Page<AssociationResponse> getPageFromList(List<AssociationResponse> associations, Pageable pageable) {

@@ -2,11 +2,11 @@ package com.pgbdev.projet12.controller;
 
 import com.pgbdev.projet12.dto.request.AssociationSearchRequest;
 import com.pgbdev.projet12.dto.response.AssociationResponse;
+import com.pgbdev.projet12.dto.response.PageResponse;
 import com.pgbdev.projet12.service.Scope;
 import com.pgbdev.projet12.service.association.AssociationSearchService;
 import com.pgbdev.projet12.service.association.AssociationService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
@@ -24,7 +24,7 @@ public class AssociationController {
     private final AssociationSearchService associationSearchService;
 
     @GetMapping("/search")
-    public ResponseEntity<Page<AssociationResponse>> search(
+    public ResponseEntity<PageResponse<AssociationResponse>> search(
             AssociationSearchRequest request,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size
