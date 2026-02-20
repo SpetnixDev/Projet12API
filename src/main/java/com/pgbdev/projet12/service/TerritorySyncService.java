@@ -1,6 +1,6 @@
 package com.pgbdev.projet12.service;
 
-import com.pgbdev.projet12.config.client.GeoApiGouvClient;
+import com.pgbdev.projet12.infra.client.GeoApiGouvClient;
 import com.pgbdev.projet12.domain.Department;
 import com.pgbdev.projet12.domain.Region;
 import com.pgbdev.projet12.dto.response.external.DepartmentExternalResponse;
