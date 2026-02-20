@@ -1,4 +1,4 @@
-package com.pgbdev.projet12.config.client;
+package com.pgbdev.projet12.infra.client;
 
 import com.pgbdev.projet12.config.properties.GeoApiProperties;
 import com.pgbdev.projet12.dto.response.external.DepartmentExternalResponse;

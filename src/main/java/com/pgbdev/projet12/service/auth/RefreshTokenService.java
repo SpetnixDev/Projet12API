@@ -3,6 +3,7 @@ package com.pgbdev.projet12.service.auth;
 import com.pgbdev.projet12.config.properties.RefreshTokenProperties;
 import com.pgbdev.projet12.domain.auth.AuthAccount;
 import com.pgbdev.projet12.domain.auth.RefreshToken;
+import com.pgbdev.projet12.infra.cookie.RefreshTokenCookieWriter;
 import com.pgbdev.projet12.repository.RefreshTokenRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -21,6 +22,7 @@ import java.util.UUID;
 public class RefreshTokenService {
     private final RefreshTokenProperties refreshTokenProperties;
     private final RefreshTokenRepository refreshTokenRepository;
+    private final RefreshTokenCookieWriter refreshTokenCookieWriter;
 
     public RefreshToken create(AuthAccount authAccount, HttpServletRequest request, String deviceId) {
         String ip = request.getRemoteAddr();
@@ -89,8 +91,7 @@ public class RefreshTokenService {
     }
 
     public void setRefreshTokenCookie(HttpServletResponse response, String token, int maxAge) {
-        String setCookieHeader = refreshTokenProperties.cookieName() + "=" + token + "; Path=/; HttpOnly; SameSite=Strict; Secure; Max-Age=" + maxAge;
-        response.addHeader("Set-Cookie", setCookieHeader);
+        refreshTokenCookieWriter.write(response, token, maxAge);
     }
 
     public void deleteAllForAuthAccount(UUID authAccountId) {
