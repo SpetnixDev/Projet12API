@@ -6,6 +6,8 @@ import com.pgbdev.projet12.domain.User;
 import com.pgbdev.projet12.domain.auth.*;
 import com.pgbdev.projet12.dto.request.LoginRequest;
 import com.pgbdev.projet12.dto.request.RegisterRequest;
+import com.pgbdev.projet12.infra.cookie.TokenCookieWriter;
+import com.pgbdev.projet12.infra.cookie.TokenType;
 import com.pgbdev.projet12.repository.AuthAccountRepository;
 import com.pgbdev.projet12.repository.RoleRepository;
 import com.pgbdev.projet12.service.association.AssociationService;
@@ -26,6 +28,7 @@ import java.util.*;
 @RequiredArgsConstructor
 public class AuthService {
     private final TokensProperties tokensProperties;
+    private final TokenCookieWriter tokenCookieWriter;
     private final RefreshTokenService refreshTokenService;
     private final AuthAccountService authAccountService;
     private final AuthAccountRepository authAccountRepository;
@@ -154,7 +157,7 @@ public class AuthService {
     }
 
     private void setAccessTokenCookie(HttpServletResponse response, String token, int maxAge) {
-        refreshTokenService.setRefreshTokenCookie(response, token, maxAge);
+        tokenCookieWriter.write(response, TokenType.ACCESS_TOKEN, token, maxAge);
     }
 
     private String extractTokenFromCookie(HttpServletRequest request) {
