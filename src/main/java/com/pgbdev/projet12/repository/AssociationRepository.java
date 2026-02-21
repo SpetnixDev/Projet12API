@@ -8,10 +8,14 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Repository
 public interface AssociationRepository extends JpaRepository<Association, UUID>, JpaSpecificationExecutor<Association> {
+    @EntityGraph(attributePaths = {"tags", "departments", "departments.region"})
+    Optional<Association> findById(UUID id);
+
     @EntityGraph(attributePaths = {"tags", "departments", "departments.region"})
     List<Association> findAll(Specification<Association> spec);
 }

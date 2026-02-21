@@ -1,9 +1,10 @@
 package com.pgbdev.projet12.service.auth;
 
-import com.pgbdev.projet12.config.properties.RefreshTokenProperties;
+import com.pgbdev.projet12.config.properties.TokensProperties;
 import com.pgbdev.projet12.domain.auth.AuthAccount;
 import com.pgbdev.projet12.domain.auth.RefreshToken;
-import com.pgbdev.projet12.infra.cookie.RefreshTokenCookieWriter;
+import com.pgbdev.projet12.infra.cookie.TokenCookieWriter;
+import com.pgbdev.projet12.infra.cookie.TokenType;
 import com.pgbdev.projet12.repository.RefreshTokenRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -20,9 +21,9 @@ import java.util.UUID;
 @RequiredArgsConstructor
 @Slf4j
 public class RefreshTokenService {
-    private final RefreshTokenProperties refreshTokenProperties;
+    private final TokensProperties tokensProperties;
     private final RefreshTokenRepository refreshTokenRepository;
-    private final RefreshTokenCookieWriter refreshTokenCookieWriter;
+    private final TokenCookieWriter tokenCookieWriter;
 
     public RefreshToken create(AuthAccount authAccount, HttpServletRequest request, String deviceId) {
         String ip = request.getRemoteAddr();
@@ -35,7 +36,7 @@ public class RefreshTokenService {
                 .userAgent(userAgent)
                 .deviceId(deviceId)
                 .createdAt(Instant.now())
-                .expiresAt(Instant.now().plusSeconds(refreshTokenProperties.expiration()))
+                .expiresAt(Instant.now().plusSeconds(tokensProperties.rtExpiration()))
                 .revoked(false)
                 .build();
 
@@ -76,7 +77,7 @@ public class RefreshTokenService {
                 .userAgent(currentUserAgent)
                 .deviceId(existingToken.getDeviceId())
                 .createdAt(Instant.now())
-                .expiresAt(Instant.now().plusSeconds(refreshTokenProperties.expiration()))
+                .expiresAt(Instant.now().plusSeconds(tokensProperties.rtExpiration()))
                 .revoked(false)
                 .replacedBy(null)
                 .build();
@@ -91,7 +92,7 @@ public class RefreshTokenService {
     }
 
     public void setRefreshTokenCookie(HttpServletResponse response, String token, int maxAge) {
-        refreshTokenCookieWriter.write(response, token, maxAge);
+        tokenCookieWriter.write(response, TokenType.REFRESH_TOKEN, token, maxAge);
     }
 
     public void deleteAllForAuthAccount(UUID authAccountId) {
