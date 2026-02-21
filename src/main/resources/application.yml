@@ -45,9 +45,11 @@ logging:
     org.hibernate.type.descriptor.sql.BasicBinder: TRACE
 
 api:
-  refresh-token:
-    cookie-name: rtcid
-    expiration: 1209600
+  tokens:
+    rt-cookie-name: rtc
+    rt-expiration: 1209600
+    at-cookie-name: atc
+    at-expiration: 300
 
 security:
   cors:

@@ -11,8 +11,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Map;
-
 @RestController
 @RequestMapping("/api/v1/auth")
 @RequiredArgsConstructor
@@ -20,29 +18,33 @@ public class AuthController {
     private final AuthService authService;
 
     @PostMapping("/register")
-    public ResponseEntity<Map<String, String>> register(
+    public ResponseEntity<Void> register(
             @RequestParam AccountType type,
             @RequestBody @Valid RegisterRequest registerRequest,
             HttpServletRequest request,
             HttpServletResponse response
     ) {
-        Map<String, String> tokens = authService.register(type, registerRequest, request, response);
+        authService.register(type, registerRequest, request, response);
 
-        return ResponseEntity.status(201).body(tokens);
+        return ResponseEntity.status(201).build();
     }
 
     @PostMapping("/login")
-    public ResponseEntity<Map<String, String>> login(
+    public ResponseEntity<Void> login(
             @RequestBody @Valid LoginRequest loginRequest,
             HttpServletRequest request,
             HttpServletResponse response
     ) {
-        return ResponseEntity.ok(authService.login(loginRequest, request, response));
+        authService.login(loginRequest, request, response);
+
+        return ResponseEntity.ok().build();
     }
 
     @PostMapping("/refresh")
-    public ResponseEntity<Map<String, String>> refresh(HttpServletRequest request, HttpServletResponse response) {
-        return ResponseEntity.ok(authService.refresh(request, response));
+    public ResponseEntity<Void> refresh(HttpServletRequest request, HttpServletResponse response) {
+        authService.refresh(request, response);
+
+        return ResponseEntity.ok().build();
     }
 
     @PostMapping("/logout")

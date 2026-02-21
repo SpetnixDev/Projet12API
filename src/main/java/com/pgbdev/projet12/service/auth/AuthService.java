@@ -1,6 +1,6 @@
 package com.pgbdev.projet12.service.auth;
 
-import com.pgbdev.projet12.config.properties.RefreshTokenProperties;
+import com.pgbdev.projet12.config.properties.TokensProperties;
 import com.pgbdev.projet12.domain.Association;
 import com.pgbdev.projet12.domain.User;
 import com.pgbdev.projet12.domain.auth.*;
@@ -25,7 +25,7 @@ import java.util.*;
 @Service
 @RequiredArgsConstructor
 public class AuthService {
-    private final RefreshTokenProperties refreshTokenProperties;
+    private final TokensProperties tokensProperties;
     private final RefreshTokenService refreshTokenService;
     private final AuthAccountService authAccountService;
     private final AuthAccountRepository authAccountRepository;
@@ -36,7 +36,7 @@ public class AuthService {
     private final JwtService jwtService;
 
     @Transactional
-    public Map<String, String> register(AccountType type, RegisterRequest request, HttpServletRequest httpRequest, HttpServletResponse httpResponse) {
+    public void register(AccountType type, RegisterRequest request, HttpServletRequest httpRequest, HttpServletResponse httpResponse) {
         if (authAccountRepository.existsByEmail(request.getEmail())) {
             throw new DuplicateResourceException(
                     AuthAccount.class,
@@ -72,7 +72,7 @@ public class AuthService {
         );
 
         RefreshToken refreshToken = refreshTokenService.create(account, httpRequest, "default");
-        refreshTokenService.setRefreshTokenCookie(httpResponse, refreshToken.getToken(), refreshTokenProperties.expiration());
+        refreshTokenService.setRefreshTokenCookie(httpResponse, refreshToken.getToken(), tokensProperties.rtExpiration());
 
         String accessToken = jwtService.generateToken(
                 account.getId(),
@@ -83,16 +83,16 @@ public class AuthService {
                         .toList()
         );
 
-        return Map.of("accessToken", accessToken);
+        setAccessTokenCookie(httpResponse, accessToken, tokensProperties.atExpiration());
     }
 
 
     @Transactional
-    public Map<String, String> login(LoginRequest request, HttpServletRequest httpRequest, HttpServletResponse httpResponse) {
+    public void login(LoginRequest request, HttpServletRequest httpRequest, HttpServletResponse httpResponse) {
         AuthAccount account = authAccountService.authenticate(request.getEmail(), request.getPassword());
         RefreshToken refreshToken = refreshTokenService.create(account, httpRequest, "default");
 
-        refreshTokenService.setRefreshTokenCookie(httpResponse, refreshToken.getToken(), refreshTokenProperties.expiration());
+        refreshTokenService.setRefreshTokenCookie(httpResponse, refreshToken.getToken(), tokensProperties.rtExpiration());
 
         String accessToken = jwtService.generateToken(
                 account.getId(),
@@ -103,11 +103,11 @@ public class AuthService {
                         .toList()
         );
 
-        return Map.of("accessToken", accessToken);
+        setAccessTokenCookie(httpResponse, accessToken, tokensProperties.atExpiration());
     }
 
     @Transactional
-    public Map<String, String> refresh(HttpServletRequest request, HttpServletResponse response) {
+    public void refresh(HttpServletRequest request, HttpServletResponse response) {
         String token = extractTokenFromCookie(request);
 
         if (token == null) {
@@ -117,7 +117,7 @@ public class AuthService {
         RefreshToken newToken = refreshTokenService.rotate(token, request)
                 .orElseThrow(() -> new AuthenticationException("Token invalid", "Session expirée. Veuillez vous reconnecter."));
 
-        refreshTokenService.setRefreshTokenCookie(response, newToken.getToken(), refreshTokenProperties.expiration());
+        refreshTokenService.setRefreshTokenCookie(response, newToken.getToken(), tokensProperties.rtExpiration());
 
         AuthAccount account = newToken.getAuthAccount();
 
@@ -130,7 +130,7 @@ public class AuthService {
                         .toList()
         );
 
-        return Map.of("accessToken", accessToken);
+        setAccessTokenCookie(response, accessToken, tokensProperties.atExpiration());
     }
 
     public void logout(HttpServletRequest request, HttpServletResponse response) {
@@ -153,12 +153,15 @@ public class AuthService {
         return Set.of(baseRole, unverifiedRole);
     }
 
+    private void setAccessTokenCookie(HttpServletResponse response, String token, int maxAge) {
+        refreshTokenService.setRefreshTokenCookie(response, token, maxAge);
+    }
 
     private String extractTokenFromCookie(HttpServletRequest request) {
         if (request.getCookies() == null) return null;
 
         for (var cookie : request.getCookies()) {
-            if (refreshTokenProperties.cookieName().equals(cookie.getName())) {
+            if (tokensProperties.rtCookieName().equals(cookie.getName())) {
                 return cookie.getValue();
             }
         }
