@@ -3,6 +3,7 @@ package com.pgbdev.projet12.controller;
 import com.pgbdev.projet12.dto.request.AssociationSearchRequest;
 import com.pgbdev.projet12.dto.response.AssociationResponse;
 import com.pgbdev.projet12.dto.response.PageResponse;
+import com.pgbdev.projet12.security.AuthPrincipal;
 import com.pgbdev.projet12.service.Scope;
 import com.pgbdev.projet12.service.association.AssociationSearchService;
 import com.pgbdev.projet12.service.association.AssociationService;
@@ -11,6 +12,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -36,6 +38,14 @@ public class AssociationController {
     @GetMapping("/{id}")
     public ResponseEntity<AssociationResponse> getAssociationById(@PathVariable UUID id) {
         return ResponseEntity.ok().body(associationService.getAssociationById(id));
+    }
+
+    @GetMapping("/me")
+    @PreAuthorize("hasRole('ASSOCIATION')")
+    public ResponseEntity<AssociationResponse> getMe(
+            @AuthenticationPrincipal AuthPrincipal principal
+    ) {
+        return ResponseEntity.ok().body(associationService.getAssociationById(principal.ownerId()));
     }
 
     @PutMapping("/{id}/tags")

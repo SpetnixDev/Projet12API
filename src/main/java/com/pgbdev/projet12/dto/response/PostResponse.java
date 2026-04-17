@@ -1,6 +1,7 @@
 package com.pgbdev.projet12.dto.response;
 
 import java.time.Instant;
+import java.util.UUID;
 
 public record PostResponse(
         Long id,
@@ -8,5 +9,7 @@ public record PostResponse(
         String contentSource,
         String contentRenderedHtml,
         Instant postedAt,
-        Instant modifiedAt
+        Instant modifiedAt,
+        UUID ownerId,
+        String ownerName
 ) {}

@@ -68,6 +68,18 @@ public class PostService {
         );
     }
 
+    public PageResponse<PostResponse> getFeedForUser(UUID userId, Pageable pageable) {
+        Page<Post> page = postRepository.findFeedForUser(userId, pageable);
+
+        return new PageResponse<>(
+                page.getContent().stream().map(postMapper::toResponse).toList(),
+                page.getNumber(),
+                page.getSize(),
+                page.getTotalElements(),
+                page.getTotalPages()
+        );
+    }
+
     @Transactional
     public PostResponse update(Long id, UpdatePostRequest request) {
         Post post = postRepository.findById(id)
