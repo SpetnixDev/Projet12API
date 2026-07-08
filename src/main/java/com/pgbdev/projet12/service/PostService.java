@@ -56,6 +56,13 @@ public class PostService {
         return postMapper.toResponse(post);
     }
 
+    public UUID getOwnerId(Long id) {
+        Post post = postRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException(Post.class, "id", id));
+
+        return post.getOwner().getId();
+    }
+
     public PageResponse<PostResponse> getAllByAssociation(UUID associationId, Pageable pageable) {
         Page<Post> page = postRepository.findAllByOwner_IdOrderByPostedAtDesc(associationId, pageable);
 

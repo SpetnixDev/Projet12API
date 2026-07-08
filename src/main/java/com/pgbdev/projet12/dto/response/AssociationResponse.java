@@ -10,5 +10,6 @@ public record AssociationResponse(
         String description,
         Instant createdAt,
         Set<TagResponse> tags,
-        Set<DepartmentResponse> departments
+        Set<DepartmentResponse> departments,
+        long supportCount
 ) {}

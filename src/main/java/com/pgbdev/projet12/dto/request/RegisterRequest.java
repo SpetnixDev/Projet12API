@@ -17,10 +17,10 @@ public class RegisterRequest {
     private String email;
 
     @NotBlank(message = "Username is mandatory")
-    @Size(min = 3, max = 16, message = "Username must be between 3 and 16 characters long")
+    @Size(min = 3, max = 32, message = "Username must be between 3 and 32 characters long")
     @Pattern(
-            regexp = "^[a-zA-Z0-9_]{3,16}$",
-            message = "Username must be alphanumeric and can include underscores, between 3 and 16 characters long"
+            regexp = "^[a-zA-Z0-9_]{3,32}$",
+            message = "Username must be alphanumeric and can include underscores, between 3 and 32 characters long"
     )
     private String name;
 

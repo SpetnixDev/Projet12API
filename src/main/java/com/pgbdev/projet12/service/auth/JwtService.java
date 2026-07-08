@@ -1,5 +1,7 @@
 package com.pgbdev.projet12.service.auth;
 
+import com.pgbdev.projet12.config.properties.SecurityProperties;
+import com.pgbdev.projet12.config.properties.TokensProperties;
 import com.pgbdev.projet12.domain.auth.AccountType;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
@@ -15,10 +17,13 @@ import java.util.UUID;
 
 @Service
 public class JwtService {
-    private static final String SECRET_PHRASE = "njdkisqoikhighoirzoknfkdnzakooifdshqiohgiokdnsioqnicvdnsqhgihqgoizer";
-    private static final SecretKey SECRET_KEY = Keys.hmacShaKeyFor(SECRET_PHRASE.getBytes(StandardCharsets.UTF_8));
+    private final TokensProperties tokensProperties;
+    private final SecretKey secretKey;
 
-    private static final long EXPIRATION_TIME = 60000 * 5;
+    public JwtService(SecurityProperties securityProperties, TokensProperties tokensProperties) {
+        this.secretKey = Keys.hmacShaKeyFor(securityProperties.secret().getBytes(StandardCharsets.UTF_8));
+        this.tokensProperties = tokensProperties;
+    }
 
     public String generateToken(UUID authAccountId, UUID ownerId, AccountType type, List<String> roles) {
         return Jwts.builder()
@@ -27,8 +32,8 @@ public class JwtService {
                 .claim("type", type.name())
                 .claim("roles", roles)
                 .issuedAt(new Date())
-                .expiration(new Date(System.currentTimeMillis() + EXPIRATION_TIME))
-                .signWith(SECRET_KEY)
+                .expiration(new Date(System.currentTimeMillis() + tokensProperties.atExpiration() * 1000L))
+                .signWith(secretKey)
                 .compact();
     }
 
@@ -44,7 +49,7 @@ public class JwtService {
 
     private Claims validateToken(String token) {
         return Jwts.parser()
-                .verifyWith(SECRET_KEY)
+                .verifyWith(secretKey)
                 .build()
                 .parseSignedClaims(token)
                 .getPayload();

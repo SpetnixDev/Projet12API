@@ -36,7 +36,7 @@ public class Post {
     private Instant modifiedAt;
 
     @ToString.Exclude
-    @ManyToOne(cascade = CascadeType.ALL, optional = false)
+    @ManyToOne(optional = false)
     @JoinColumn(name = "owner_id", nullable = false)
     private Association owner;
 

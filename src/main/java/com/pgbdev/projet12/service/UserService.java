@@ -13,8 +13,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -69,9 +71,56 @@ public class UserService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException(User.class, "id", userId));
 
-        return user.getSubscriptions().stream()
-                .map(associationMapper::toResponse)
+        List<Association> associations = user.getSubscriptions().stream().toList();
+        Map<UUID, Long> supportCounts = getSupportCounts(associations);
+
+        return associationMapper.toResponseList(associations, supportCounts);
+    }
+
+    @Transactional
+    public void support(UUID userId, UUID associationId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException(User.class, "id", userId));
+
+        Association association = associationRepository.findById(associationId)
+                .orElseThrow(() -> new ResourceNotFoundException(Association.class, "id", associationId));
+
+        user.getSupportedAssociations().add(association);
+    }
+
+    @Transactional
+    public void unsupport(UUID userId, UUID associationId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException(User.class, "id", userId));
+
+        user.getSupportedAssociations().removeIf(association -> association.getId().equals(associationId));
+    }
+
+    @Transactional(readOnly = true)
+    public List<AssociationResponse> getSupports(UUID userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException(User.class, "id", userId));
+
+        List<Association> associations = user.getSupportedAssociations().stream().toList();
+        Map<UUID, Long> supportCounts = getSupportCounts(associations);
+
+        return associationMapper.toResponseList(associations, supportCounts);
+    }
+
+    private Map<UUID, Long> getSupportCounts(List<Association> associations) {
+        List<UUID> associationIds = associations.stream()
+                .map(Association::getId)
                 .toList();
+
+        if (associationIds.isEmpty()) {
+            return Map.of();
+        }
+
+        return userRepository.countSupportsByAssociationIds(associationIds).stream()
+                .collect(Collectors.toMap(
+                        UserRepository.AssociationSupportCount::getAssociationId,
+                        UserRepository.AssociationSupportCount::getSupportCount
+                ));
     }
 }
 

@@ -36,6 +36,15 @@ public class User {
     @ToString.Exclude
     private Set<Association> subscriptions = new HashSet<>();
 
+    @ManyToMany
+    @JoinTable(
+            name = "user_association_supports",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "association_id")
+    )
+    @ToString.Exclude
+    private Set<Association> supportedAssociations = new HashSet<>();
+
     public User(String username) {
         this.username = username;
     }

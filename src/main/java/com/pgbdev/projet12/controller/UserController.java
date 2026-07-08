@@ -60,4 +60,32 @@ public class UserController {
     ) {
         return ResponseEntity.ok(userService.getSubscriptions(principal.ownerId()));
     }
+
+    @PostMapping("/me/supports/{associationId}")
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<Void> support(
+            @AuthenticationPrincipal AuthPrincipal principal,
+            @PathVariable UUID associationId
+    ) {
+        userService.support(principal.ownerId(), associationId);
+        return ResponseEntity.noContent().build();
+    }
+
+    @DeleteMapping("/me/supports/{associationId}")
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<Void> unsupport(
+            @AuthenticationPrincipal AuthPrincipal principal,
+            @PathVariable UUID associationId
+    ) {
+        userService.unsupport(principal.ownerId(), associationId);
+        return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/me/supports")
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<List<AssociationResponse>> getMySupports(
+            @AuthenticationPrincipal AuthPrincipal principal
+    ) {
+        return ResponseEntity.ok(userService.getSupports(principal.ownerId()));
+    }
 }
