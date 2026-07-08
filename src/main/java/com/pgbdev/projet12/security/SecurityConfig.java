@@ -54,7 +54,8 @@ public class SecurityConfig {
                 .requestMatchers("/error").permitAll()
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/v1/auth/register", "/api/v1/auth/login", "/api/v1/auth/refresh").permitAll()
-                .requestMatchers(HttpMethod.GET, "/api/v1/associations/search").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/v1/associations/search", "/api/v1/associations/*", "/api/v1/tags", "/api/v1/territories/**").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/v1/posts/*", "/api/v1/posts/association/*").permitAll()
                 .anyRequest().authenticated()
         );
 

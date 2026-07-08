@@ -7,6 +7,7 @@ import com.pgbdev.projet12.domain.Tag;
 import com.pgbdev.projet12.dto.response.AssociationResponse;
 import com.pgbdev.projet12.mapper.AssociationMapper;
 import com.pgbdev.projet12.repository.AssociationRepository;
+import com.pgbdev.projet12.repository.UserRepository;
 import com.pgbdev.projet12.service.Scope;
 import com.pgbdev.projet12.service.TagResolver;
 import com.pgbdev.projet12.service.TagService;
@@ -29,6 +30,7 @@ public class AssociationService {
     private final TagService tagService;
     private final TagResolver tagResolver;
     private final AssociationMapper associationMapper;
+    private final UserRepository userRepository;
 
     public Association create(String name) {
         Association association = new Association(name);
@@ -43,7 +45,9 @@ public class AssociationService {
                         id.toString()
                 ));
 
-        return associationMapper.toResponse(association);
+        long supportCount = userRepository.countSupportsByAssociationId(association.getId());
+
+        return associationMapper.toResponse(association, supportCount);
     }
 
     @Transactional
@@ -60,6 +64,18 @@ public class AssociationService {
 
         association.getTags().clear();
         association.getTags().addAll(tags);
+    }
+
+    @Transactional
+    public void updateDescription(UUID id, String description) {
+        Association association = associationRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        Association.class,
+                        "id",
+                        id.toString()
+                ));
+
+        association.setDescription(description);
     }
 
     @Transactional

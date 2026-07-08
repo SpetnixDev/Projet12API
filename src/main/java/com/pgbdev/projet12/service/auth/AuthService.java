@@ -141,6 +141,7 @@ public class AuthService {
 
         if (token != null) refreshTokenService.revoke(token);
 
+        setAccessTokenCookie(response, "", 0);
         refreshTokenService.setRefreshTokenCookie(response, "", 0);
     }
 

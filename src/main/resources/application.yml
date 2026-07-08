@@ -51,6 +51,9 @@ api:
     at-cookie-name: atc
     at-expiration: 300
 
+  jwt:
+    secret: ${JWT_SECRET}
+
 security:
   cors:
     allowed-origins:

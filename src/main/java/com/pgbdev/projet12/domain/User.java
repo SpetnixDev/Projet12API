@@ -6,7 +6,9 @@ import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.proxy.HibernateProxy;
 import org.hibernate.type.SqlTypes;
 
+import java.util.HashSet;
 import java.util.Objects;
+import java.util.Set;
 import java.util.UUID;
 
 @Entity
@@ -24,6 +26,24 @@ public class User {
 
     @Column(nullable = false, unique = true)
     private String username;
+
+    @ManyToMany
+    @JoinTable(
+            name = "user_subscriptions",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "association_id")
+    )
+    @ToString.Exclude
+    private Set<Association> subscriptions = new HashSet<>();
+
+    @ManyToMany
+    @JoinTable(
+            name = "user_association_supports",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "association_id")
+    )
+    @ToString.Exclude
+    private Set<Association> supportedAssociations = new HashSet<>();
 
     public User(String username) {
         this.username = username;

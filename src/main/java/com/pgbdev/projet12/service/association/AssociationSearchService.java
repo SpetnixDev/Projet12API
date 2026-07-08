@@ -6,6 +6,7 @@ import com.pgbdev.projet12.dto.response.AssociationResponse;
 import com.pgbdev.projet12.dto.response.PageResponse;
 import com.pgbdev.projet12.mapper.AssociationMapper;
 import com.pgbdev.projet12.repository.AssociationRepository;
+import com.pgbdev.projet12.repository.UserRepository;
 import com.pgbdev.projet12.service.TagResolver;
 import com.pgbdev.projet12.service.association.search.context.NormalizedAssociation;
 import com.pgbdev.projet12.service.association.search.context.SearchContext;
@@ -22,6 +23,9 @@ import org.springframework.data.support.PageableExecutionUtils;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -32,12 +36,13 @@ public class AssociationSearchService {
     private final TagResolver tagResolver;
     private final TextNormalizer normalizer;
     private final Tokenizer tokenizer;
+    private final UserRepository userRepository;
 
     public PageResponse<AssociationResponse> searchAssociations(AssociationSearchRequest request, Pageable pageable) {
         List<Long> tagIds = tagResolver.resolveIds(request.tags());
 
         AssociationSearchCriteria criteria = new AssociationSearchCriteria(
-                request.query(),
+                null,
                 tagIds,
                 request.departments()
         );
@@ -50,10 +55,11 @@ public class AssociationSearchService {
                         normalizer.normalize(association.getName()),
                         normalizer.normalize(association.getDescription())
                 )).toList();
-        SearchContext context = SearchContext.from(criteria.query(), normalizer, tokenizer);
+        SearchContext context = SearchContext.from(request.query(), normalizer, tokenizer);
 
         List<Association> results = searchResultScorer.scoreAndSortResults(normalizedResults, context);
-        List<AssociationResponse> response = associationMapper.toResponseList(results);
+        Map<UUID, Long> supportCounts = getSupportCounts(results);
+        List<AssociationResponse> response = associationMapper.toResponseList(results, supportCounts);
 
         Page<AssociationResponse> page = getPageFromList(response, pageable);
 
@@ -77,5 +83,21 @@ public class AssociationSearchService {
         List<AssociationResponse> pageContent = associations.subList(fromIndex, toIndex);
 
         return PageableExecutionUtils.getPage(pageContent, pageable, () -> total);
+    }
+
+    private Map<UUID, Long> getSupportCounts(List<Association> associations) {
+        List<UUID> associationIds = associations.stream()
+                .map(Association::getId)
+                .toList();
+
+        if (associationIds.isEmpty()) {
+            return Map.of();
+        }
+
+        return userRepository.countSupportsByAssociationIds(associationIds).stream()
+                .collect(Collectors.toMap(
+                        UserRepository.AssociationSupportCount::getAssociationId,
+                        UserRepository.AssociationSupportCount::getSupportCount
+                ));
     }
 }
