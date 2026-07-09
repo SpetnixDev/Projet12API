@@ -7,8 +7,12 @@ import remarkGfm from "remark-gfm"
 type Props = {
   associationId: string
   action: (formData: FormData) => void | Promise<void>
-  postCreated: boolean
-  postError: string | null
+  postCreated?: boolean
+  postError?: string | null
+  postId?: number
+  initialTitle?: string
+  initialContent?: string
+  submitLabel?: string
 }
 
 type MarkdownAction = {
@@ -101,12 +105,16 @@ function toPreviewPlaceholder() {
 export default function AssociationPostEditor({
   associationId,
   action,
-  postCreated,
-  postError,
+  postCreated = false,
+  postError = null,
+  postId,
+  initialTitle = "",
+  initialContent = "",
+  submitLabel = "Publier",
 }: Props) {
   const textareaRef = useRef<HTMLTextAreaElement>(null)
-  const [title, setTitle] = useState("")
-  const [content, setContent] = useState("")
+  const [title, setTitle] = useState(initialTitle)
+  const [content, setContent] = useState(initialContent)
   const [tab, setTab] = useState<"write" | "preview">("write")
 
   const markdownForPreview = useMemo(() => {
@@ -137,6 +145,7 @@ export default function AssociationPostEditor({
   return (
     <form action={action} className="mt-4 space-y-3">
       <input type="hidden" name="associationId" value={associationId} />
+      {postId !== undefined ? <input type="hidden" name="postId" value={postId} /> : null}
 
       {postCreated ? <p className="text-sm text-emerald-200">Post publié avec succès.</p> : null}
       {postError ? <p className="text-sm text-red-200">{postError}</p> : null}
@@ -223,7 +232,7 @@ export default function AssociationPostEditor({
 
       <div className="flex justify-end">
         <button type="submit" className="ui-button rounded-xl px-4 py-2 text-sm">
-          Publier
+          {submitLabel}
         </button>
       </div>
     </form>

@@ -1,7 +1,13 @@
 export interface Association {
     id: string
     name: string
-    description: string
+    description: string | null
+    phoneNumber: string | null
+    contactEmail: string | null
+    address: string | null
+    websiteUrl: string | null
+    rnaNumber: string | null
+    donationUseDescription: string | null
     createdAt: string
     tags: Tag[]
     departments: Department[]

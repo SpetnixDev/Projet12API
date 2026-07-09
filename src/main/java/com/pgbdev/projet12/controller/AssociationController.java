@@ -1,6 +1,7 @@
 package com.pgbdev.projet12.controller;
 
 import com.pgbdev.projet12.dto.request.AssociationSearchRequest;
+import com.pgbdev.projet12.dto.request.UpdateAssociationProfileRequest;
 import com.pgbdev.projet12.dto.response.AssociationResponse;
 import com.pgbdev.projet12.dto.response.PageResponse;
 import com.pgbdev.projet12.domain.auth.AccountType;
@@ -8,6 +9,7 @@ import com.pgbdev.projet12.security.AuthPrincipal;
 import com.pgbdev.projet12.service.Scope;
 import com.pgbdev.projet12.service.association.AssociationSearchService;
 import com.pgbdev.projet12.service.association.AssociationService;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.Size;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
@@ -75,6 +77,18 @@ public class AssociationController {
     ) {
         checkCanManageAssociation(id, principal);
         associationService.updateDescription(id, description);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PutMapping("/{id}/profile")
+    @PreAuthorize("hasRole('ASSOCIATION') or hasRole('ADMIN')")
+    public ResponseEntity<Void> updateProfile(
+            @AuthenticationPrincipal AuthPrincipal principal,
+            @PathVariable UUID id,
+            @Valid @RequestBody UpdateAssociationProfileRequest request
+    ) {
+        checkCanManageAssociation(id, principal);
+        associationService.updateProfile(id, request);
         return ResponseEntity.noContent().build();
     }
 

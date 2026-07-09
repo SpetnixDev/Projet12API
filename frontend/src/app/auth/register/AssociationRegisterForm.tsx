@@ -74,7 +74,7 @@ export default function AssociationRegisterForm() {
                 type="password"
                 required
                 minLength={8}
-                pattern="(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[^A-Za-z0-9]).{8,}"
+                pattern="(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[^A-Za-z0-9]).{8,}"
                 title="8 caractères minimum, avec majuscule, minuscule, chiffre et caractère spécial"
                 value={password}
                 onChange={e => setPassword(e.target.value)}

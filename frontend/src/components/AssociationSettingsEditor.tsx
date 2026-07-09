@@ -12,6 +12,12 @@ const MAX_DESCRIPTION_LENGTH = 2000
 type Props = {
   associationId: string
   description: string
+  phoneNumber: string
+  contactEmail: string
+  address: string
+  websiteUrl: string
+  rnaNumber: string
+  donationUseDescription: string
   tags: Tag[]
   departments: Department[]
   regions: Region[]
@@ -20,10 +26,13 @@ type Props = {
   initialScope: DepartmentScope
   descriptionUpdated: boolean
   descriptionError: string | null
+  profileUpdated: boolean
+  profileError: string | null
   tagsUpdated: boolean
   territoriesUpdated: boolean
   tagsError: string | null
   territoriesError: string | null
+  profileAction: (formData: FormData) => void | Promise<void>
   descriptionAction: (formData: FormData) => void | Promise<void>
   tagsAction: (formData: FormData) => void | Promise<void>
   territoriesAction: (formData: FormData) => void | Promise<void>
@@ -42,6 +51,12 @@ function counterToneClass(length: number) {
 export default function AssociationSettingsEditor({
   associationId,
   description,
+  phoneNumber,
+  contactEmail,
+  address,
+  websiteUrl,
+  rnaNumber,
+  donationUseDescription,
   tags,
   departments,
   regions,
@@ -50,16 +65,20 @@ export default function AssociationSettingsEditor({
   initialScope,
   descriptionUpdated,
   descriptionError,
+  profileUpdated,
+  profileError,
   tagsUpdated,
   territoriesUpdated,
   tagsError,
   territoriesError,
+  profileAction,
   descriptionAction,
   tagsAction,
   territoriesAction,
 }: Props) {
   const [scope, setScope] = useState<DepartmentScope>(initialScope)
   const [descriptionLength, setDescriptionLength] = useState(description.length)
+  const [donationUseLength, setDonationUseLength] = useState(donationUseDescription.length)
   const [tagsSelection, setTagsSelection] = useState<string[]>(selectedTagCodes)
   const [departmentSelection, setDepartmentSelection] = useState<string[]>(selectedDepartmentCodes)
 
@@ -88,6 +107,105 @@ export default function AssociationSettingsEditor({
 
   return (
     <div className="space-y-4">
+      <SurfacePanel className="rounded-2xl p-6">
+        <h2 className="text-lg font-semibold text-white">Informations publiques</h2>
+        <p className="mt-2 text-sm text-white/70">
+          Renseignez les informations de contact et de légitimation visibles sur la page publique.
+        </p>
+
+        <div className="mt-3">
+          {profileUpdated ? (
+            <p className="rounded-xl border border-emerald-300/35 bg-emerald-400/12 px-3 py-2 text-sm text-emerald-100">
+              Informations publiques mises à jour.
+            </p>
+          ) : null}
+          {profileError ? <p className="ui-error px-3 py-2 text-sm">{profileError}</p> : null}
+        </div>
+
+        <form action={profileAction} className="mt-4 space-y-4">
+          <input type="hidden" name="associationId" value={associationId} />
+
+          <div className="grid gap-4 md:grid-cols-2">
+            <label className="block">
+              <span className="mb-1 block text-xs font-medium text-white/65">Téléphone</span>
+              <input
+                name="phoneNumber"
+                defaultValue={phoneNumber}
+                maxLength={20}
+                className="ui-input"
+                placeholder="01 23 45 67 89"
+              />
+            </label>
+
+            <label className="block">
+              <span className="mb-1 block text-xs font-medium text-white/65">Email de contact</span>
+              <input
+                type="email"
+                name="contactEmail"
+                defaultValue={contactEmail}
+                maxLength={255}
+                className="ui-input"
+                placeholder="contact@association.fr"
+              />
+            </label>
+
+            <label className="block md:col-span-2">
+              <span className="mb-1 block text-xs font-medium text-white/65">Adresse</span>
+              <input
+                name="address"
+                defaultValue={address}
+                maxLength={500}
+                className="ui-input"
+                placeholder="Adresse de contact ou siège social"
+              />
+            </label>
+
+            <label className="block">
+              <span className="mb-1 block text-xs font-medium text-white/65">Site internet</span>
+              <input
+                name="websiteUrl"
+                defaultValue={websiteUrl}
+                maxLength={255}
+                className="ui-input"
+                placeholder="https://association.fr"
+              />
+            </label>
+
+            <label className="block">
+              <span className="mb-1 block text-xs font-medium text-white/65">RNA</span>
+              <input
+                name="rnaNumber"
+                defaultValue={rnaNumber}
+                maxLength={50}
+                className="ui-input"
+                placeholder="W123456789"
+              />
+            </label>
+          </div>
+
+          <label className="block">
+            <span className="mb-1 block text-xs font-medium text-white/65">Utilisation des dons</span>
+            <textarea
+              name="donationUseDescription"
+              defaultValue={donationUseDescription}
+              maxLength={MAX_DESCRIPTION_LENGTH}
+              rows={4}
+              className="ui-input min-h-28 resize-y"
+              placeholder="Expliquez brièvement comment les dons sont utilisés."
+              onChange={(event) => setDonationUseLength(event.target.value.length)}
+            />
+          </label>
+
+          <p className={`text-right text-xs ${counterToneClass(donationUseLength)}`} aria-live="polite">
+            {donationUseLength}/{MAX_DESCRIPTION_LENGTH}
+          </p>
+
+          <button type="submit" className="ui-button rounded-xl px-4 py-2 text-sm">
+            Enregistrer les informations
+          </button>
+        </form>
+      </SurfacePanel>
+
       <SurfacePanel className="rounded-2xl p-6">
         <h2 className="text-lg font-semibold text-white">Description</h2>
         <p className="mt-2 text-sm text-white/70">Mettez à jour la description publique de votre association.</p>

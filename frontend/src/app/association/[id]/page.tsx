@@ -53,6 +53,14 @@ function getPostDate(post: {
   return post.postedAt ?? post.modifiedAt
 }
 
+function hasText(value: string | null | undefined) {
+  return Boolean(value?.trim())
+}
+
+function websiteHref(value: string) {
+  return /^https?:\/\//i.test(value) ? value : `https://${value}`
+}
+
 export default async function Page({
   params,
   searchParams,
@@ -115,6 +123,19 @@ export default async function Page({
       }).format(new Date(association.createdAt))
       : null
     const supportCount = association.supportCount ?? 0
+    const phoneNumber = association.phoneNumber?.trim() ?? ""
+    const contactEmail = association.contactEmail?.trim() ?? ""
+    const address = association.address?.trim() ?? ""
+    const websiteUrl = association.websiteUrl?.trim() ?? ""
+    const rnaNumber = association.rnaNumber?.trim() ?? ""
+    const donationUseDescription = association.donationUseDescription?.trim() ?? ""
+    const hasPublicInfo =
+      hasText(phoneNumber) ||
+      hasText(contactEmail) ||
+      hasText(address) ||
+      hasText(websiteUrl) ||
+      hasText(rnaNumber) ||
+      hasText(donationUseDescription)
 
     return (
       <main className="app-shell-bg min-h-screen px-6 py-10">
@@ -168,6 +189,85 @@ export default async function Page({
               {association.description || "Aucune description."}
             </p>
           </SurfacePanel>
+
+          {hasPublicInfo ? (
+            <SurfacePanel as="section" className="rounded-2xl p-6">
+              <h2 className="text-sm font-medium text-white/80">Informations pratiques</h2>
+
+              <dl className="mt-4 grid gap-4 sm:grid-cols-2">
+                {hasText(phoneNumber) ? (
+                  <div>
+                    <dt className="text-xs font-medium uppercase text-white/45">Téléphone</dt>
+                    <dd className="mt-1 text-sm text-white/78">
+                      <a
+                        href={`tel:${phoneNumber}`}
+                        className="underline-offset-2 hover:text-white hover:underline"
+                      >
+                        {phoneNumber}
+                      </a>
+                    </dd>
+                  </div>
+                ) : null}
+
+                {hasText(contactEmail) ? (
+                  <div>
+                    <dt className="text-xs font-medium uppercase text-white/45">Email</dt>
+                    <dd className="mt-1 text-sm text-white/78">
+                      <a
+                        href={`mailto:${contactEmail}`}
+                        className="underline-offset-2 hover:text-white hover:underline"
+                      >
+                        {contactEmail}
+                      </a>
+                    </dd>
+                  </div>
+                ) : null}
+
+                {hasText(websiteUrl) ? (
+                  <div>
+                    <dt className="text-xs font-medium uppercase text-white/45">Site internet</dt>
+                    <dd className="mt-1 text-sm text-white/78">
+                      <a
+                        href={websiteHref(websiteUrl)}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="break-words underline-offset-2 hover:text-white hover:underline"
+                      >
+                        {websiteUrl}
+                      </a>
+                    </dd>
+                  </div>
+                ) : null}
+
+                {hasText(rnaNumber) ? (
+                  <div>
+                    <dt className="text-xs font-medium uppercase text-white/45">RNA</dt>
+                    <dd className="mt-1 text-sm text-white/78">{rnaNumber}</dd>
+                  </div>
+                ) : null}
+
+                {hasText(address) ? (
+                  <div className="sm:col-span-2">
+                    <dt className="text-xs font-medium uppercase text-white/45">Adresse</dt>
+                    <dd className="mt-1 whitespace-pre-wrap text-sm text-white/78">
+                      {address}
+                    </dd>
+                  </div>
+                ) : null}
+
+                {hasText(donationUseDescription) ? (
+                  <div className="sm:col-span-2">
+                    <dt className="text-xs font-medium uppercase text-white/45">
+                      Utilisation des dons
+                    </dt>
+                    <dd className="mt-1 whitespace-pre-wrap text-sm leading-6 text-white/78">
+                      {donationUseDescription}
+                    </dd>
+                  </div>
+                ) : null}
+              </dl>
+            </SurfacePanel>
+          ) : null}
 
           <div className="grid gap-6 md:grid-cols-[18rem_minmax(0,1fr)]">
             <section className="hidden rounded-2xl border border-white/10 bg-[rgba(24,28,36,0.84)] p-4 md:block md:self-start">

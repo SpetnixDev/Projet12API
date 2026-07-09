@@ -12,6 +12,7 @@ build/
 *.env
 *.key
 *.crt
+!.env.example
 
 # Docker (runtime uniquement)
 pgdata/

@@ -4,6 +4,7 @@ import com.pgbdev.projet12.domain.Association;
 import com.pgbdev.projet12.domain.Department;
 import com.pgbdev.projet12.domain.Region;
 import com.pgbdev.projet12.domain.Tag;
+import com.pgbdev.projet12.dto.request.UpdateAssociationProfileRequest;
 import com.pgbdev.projet12.dto.response.AssociationResponse;
 import com.pgbdev.projet12.mapper.AssociationMapper;
 import com.pgbdev.projet12.repository.AssociationRepository;
@@ -38,12 +39,7 @@ public class AssociationService {
     }
 
     public AssociationResponse getAssociationById(UUID id) {
-        Association association = associationRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException(
-                        Association.class,
-                        "id",
-                        id.toString()
-                ));
+        Association association = getAssociationOrThrow(id);
 
         long supportCount = userRepository.countSupportsByAssociationId(association.getId());
 
@@ -54,12 +50,7 @@ public class AssociationService {
     public void updateTags(UUID id, List<String> tagNames) {
         List<Long> tagIds = tagResolver.resolveIds(tagNames);
 
-        Association association = associationRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException(
-                        Association.class,
-                        "id",
-                        id.toString()
-                ));
+        Association association = getAssociationOrThrow(id);
         Set<Tag> tags = tagService.getTags(tagIds);
 
         association.getTags().clear();
@@ -68,14 +59,21 @@ public class AssociationService {
 
     @Transactional
     public void updateDescription(UUID id, String description) {
-        Association association = associationRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException(
-                        Association.class,
-                        "id",
-                        id.toString()
-                ));
+        Association association = getAssociationOrThrow(id);
 
         association.setDescription(description);
+    }
+
+    @Transactional
+    public void updateProfile(UUID id, UpdateAssociationProfileRequest request) {
+        Association association = getAssociationOrThrow(id);
+
+        association.setPhoneNumber(normalize(request.phoneNumber()));
+        association.setContactEmail(normalize(request.contactEmail()));
+        association.setAddress(normalize(request.address()));
+        association.setWebsiteUrl(normalize(request.websiteUrl()));
+        association.setRnaNumber(normalize(request.rnaNumber()));
+        association.setDonationUseDescription(normalize(request.donationUseDescription()));
     }
 
     @Transactional
@@ -86,12 +84,7 @@ public class AssociationService {
             throw new InvalidTerritorySelectionException(Region.class, "Au moins un code de région doit être fourni.");
         }
 
-        Association association = associationRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException(
-                        Association.class,
-                        "id",
-                        id.toString()
-                ));
+        Association association = getAssociationOrThrow(id);
         Set<Department> departments = territoryService.resolveDepartments(scope, departmentCodes, regionCodes);
 
         association.getDepartments().clear();
@@ -101,5 +94,23 @@ public class AssociationService {
     @Transactional
     public void delete(UUID id) {
         associationRepository.deleteById(id);
+    }
+
+    private Association getAssociationOrThrow(UUID id) {
+        return associationRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        Association.class,
+                        "id",
+                        id.toString()
+                ));
+    }
+
+    private String normalize(String value) {
+        if (value == null) {
+            return null;
+        }
+
+        String trimmed = value.trim();
+        return trimmed.isEmpty() ? null : trimmed;
     }
 }

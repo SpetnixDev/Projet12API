@@ -32,6 +32,24 @@ public class Association {
     @Column(length = 2000)
     private String description;
 
+    @Column(length = 20)
+    private String phoneNumber;
+
+    @Column(length = 255)
+    private String contactEmail;
+
+    @Column(length = 500)
+    private String address;
+
+    @Column(length = 255)
+    private String websiteUrl;
+
+    @Column(length = 50)
+    private String rnaNumber;
+
+    @Column(length = 2000)
+    private String donationUseDescription;
+
     @CreationTimestamp
     @Column(nullable = false, updatable = false)
     private Instant createdAt;

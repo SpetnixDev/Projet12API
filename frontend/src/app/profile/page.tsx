@@ -10,6 +10,7 @@ import {
   getMyAssociationServer,
   updateAssociationDescriptionServer,
   updateAssociationDepartmentsServer,
+  updateAssociationProfileServer,
   updateAssociationTagsServer,
 } from "@/lib/associations/manage-server"
 import {
@@ -27,6 +28,8 @@ import type { DepartmentScope } from "@/types/territory"
 type ProfileSearchParams = Promise<{
   descriptionUpdated?: string | string[]
   descriptionError?: string | string[]
+  profileUpdated?: string | string[]
+  profileError?: string | string[]
   tagsUpdated?: string | string[]
   territoriesUpdated?: string | string[]
   tagsError?: string | string[]
@@ -48,6 +51,39 @@ function readManyValues(formData: FormData, key: string) {
     .filter((entry): entry is string => typeof entry === "string")
     .map((entry) => entry.trim())
     .filter(Boolean)
+}
+
+async function updateAssociationProfileAction(formData: FormData) {
+  "use server"
+
+  const associationId = firstFormValue(formData, "associationId")
+
+  if (!associationId) {
+    redirect("/profile?profileError=Association+introuvable")
+  }
+
+  const payload = {
+    phoneNumber: firstFormValue(formData, "phoneNumber"),
+    contactEmail: firstFormValue(formData, "contactEmail"),
+    address: firstFormValue(formData, "address"),
+    websiteUrl: firstFormValue(formData, "websiteUrl"),
+    rnaNumber: firstFormValue(formData, "rnaNumber"),
+    donationUseDescription: firstFormValue(formData, "donationUseDescription"),
+  }
+
+  try {
+    await updateAssociationProfileServer(associationId, payload)
+  } catch (error) {
+    const message =
+      error instanceof Error
+        ? error.message
+        : "Erreur lors de la mise à jour des informations publiques."
+    redirect(`/profile?profileError=${encodeURIComponent(message)}`)
+  }
+
+  revalidatePath("/profile")
+  revalidatePath(`/association/${associationId}`)
+  redirect("/profile?profileUpdated=1")
 }
 
 async function updateAssociationTagsAction(formData: FormData) {
@@ -219,6 +255,8 @@ async function renderUserProfile() {
 async function renderAssociationProfile(params: {
   descriptionUpdated: boolean
   descriptionError: string | null
+  profileUpdated: boolean
+  profileError: string | null
   tagsUpdated: boolean
   territoriesUpdated: boolean
   tagsError: string | null
@@ -243,6 +281,12 @@ async function renderAssociationProfile(params: {
       <AssociationSettingsEditor
         associationId={association.id}
         description={association.description ?? ""}
+        phoneNumber={association.phoneNumber ?? ""}
+        contactEmail={association.contactEmail ?? ""}
+        address={association.address ?? ""}
+        websiteUrl={association.websiteUrl ?? ""}
+        rnaNumber={association.rnaNumber ?? ""}
+        donationUseDescription={association.donationUseDescription ?? ""}
         tags={availableTags}
         departments={availableDepartments}
         regions={availableRegions}
@@ -251,10 +295,13 @@ async function renderAssociationProfile(params: {
         initialScope={initialScope}
         descriptionUpdated={params.descriptionUpdated}
         descriptionError={params.descriptionError}
+        profileUpdated={params.profileUpdated}
+        profileError={params.profileError}
         tagsUpdated={params.tagsUpdated}
         territoriesUpdated={params.territoriesUpdated}
         tagsError={params.tagsError}
         territoriesError={params.territoriesError}
+        profileAction={updateAssociationProfileAction}
         descriptionAction={updateAssociationDescriptionAction}
         tagsAction={updateAssociationTagsAction}
         territoriesAction={updateAssociationTerritoriesAction}
@@ -274,6 +321,8 @@ export default async function ProfilePage({
   const params = await searchParams
   const descriptionUpdated = firstValue(params.descriptionUpdated) === "1"
   const descriptionError = firstValue(params.descriptionError) ?? null
+  const profileUpdated = firstValue(params.profileUpdated) === "1"
+  const profileError = firstValue(params.profileError) ?? null
   const tagsUpdated = firstValue(params.tagsUpdated) === "1"
   const territoriesUpdated = firstValue(params.territoriesUpdated) === "1"
   const tagsError = firstValue(params.tagsError) ?? null
@@ -297,6 +346,8 @@ export default async function ProfilePage({
       associationProfile = await renderAssociationProfile({
         descriptionUpdated,
         descriptionError,
+        profileUpdated,
+        profileError,
         tagsUpdated,
         territoriesUpdated,
         tagsError,
