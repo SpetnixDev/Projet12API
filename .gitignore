@@ -32,3 +32,4 @@ Thumbs.db
 
 # Scripts locaux
 *.ps1
+!dev.ps1

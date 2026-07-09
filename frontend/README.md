@@ -1,87 +1,36 @@
-# Projet12
+This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
-Application Next.js 16 avec App Router pour consulter des associations et gerer l'authentification via un backend Spring.
+## Getting Started
 
-## Stack
-
-- Next.js 16.1.6
-- React 19.2
-- TypeScript 5
-- Tailwind CSS 4
-- App Router
-
-## Demarrage
-
-Prerequis:
-
-- Node.js 20.9 ou plus recent
-- un backend Spring accessible via `SPRING_API_URL`
-
-Installation et lancement:
+First, run the development server:
 
 ```bash
-npm install
 npm run dev
+# or
+yarn dev
+# or
+pnpm dev
+# or
+bun dev
 ```
 
-Application disponible sur `http://localhost:3000`.
+Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-## Variables d'environnement
+You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
-Créer un fichier `.env.local` a la racine du projet:
+This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
-```env
-SPRING_API_URL=http://localhost:8080/api/v1
-```
+## Learn More
 
-## Structure
+To learn more about Next.js, take a look at the following resources:
 
-```text
-src/
-	app/
-		api/auth/         route handlers de proxy auth
-		association/[id]/ fiche association
-		associations/     liste et recherche
-		auth/login/       page de connexion canonique
-		auth/register/    page d'inscription canonique
-	components/         composants UI partages
-	lib/
-		association/      acces serveur fiche association
-		associations/     acces serveur liste associations
-		auth/             client auth navigateur
-		http/             helpers query et reponses serveur
-		spring/           client serveur vers l'API Spring
-	types/              types metier
-```
+- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
+- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
 
-## Routes principales
+You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
 
-- `/`
-- `/associations`
-- `/association/[id]`
-- `/auth/login`
-- `/auth/register?type=USER`
+## Deploy on Vercel
 
-## Authentification
+The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
-- le frontend passe par des route handlers Next sous `src/app/api/auth/*`
-- ces handlers appellent le backend Spring et relaient les cookies d'authentification
-- les pages serveur lisent les cookies via `cookies()`
-- en cas de `401`, les pages protegees passent par `/api/auth/refresh?next=...`
-- si le refresh echoue, l'utilisateur est redirige vers `/auth/login`
-
-## Bonnes pratiques Next 16 retenues
-
-- App Router uniquement
-- `params`, `searchParams` et `cookies()` utilises selon le modele asynchrone
-- pas d'ecriture de cookies dans les helpers serveur partages par les pages
-- route handlers utilises pour les flux d'auth et le forwarding des `Set-Cookie`
-- scripts compatibles Next 16 et Turbopack par defaut
-
-## Validation
-
-```bash
-npm run build
-```
-
-Le build de production doit passer avant toute livraison.
+Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
